@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Hack Nation Chat",
-  description: "Gemini-powered chat",
+  title: "Agentic Commerce",
+  description: "AI-powered shopping assistant",
 };
 
 export default function RootLayout({

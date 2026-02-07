@@ -5,12 +5,15 @@ import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.ai.breakdown import parse_breakdown
 from src.ai.brief import parse_brief
 from src.core.cart import build_cart
 from src.core.checkout import build_checkout_plan
 from src.core.ranking import rank_products
 from src.core.retailers import discover_products
 from src.core.types import (
+    BreakdownRequest,
+    BreakdownResponse,
     BriefRequest,
     BriefResponse,
     CartRequest,
@@ -39,6 +42,24 @@ app.add_middleware(
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.post("/api/breakdown", response_model=BreakdownResponse)
+def breakdown(req: BreakdownRequest):
+    if not GEMINI_API_KEY:
+        raise HTTPException(status_code=503, detail="GEMINI_API_KEY not set.")
+
+    try:
+        result = parse_breakdown(
+            req.intent,
+            api_key=GEMINI_API_KEY,
+            model=LLM_MODEL or None,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=502, detail=f"AI response invalid: {e}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI error: {e}") from e
 
 
 @app.post("/api/brief", response_model=BriefResponse)

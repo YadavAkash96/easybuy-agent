@@ -50,3 +50,23 @@ export interface CheckoutPlan {
   retailer_steps: CheckoutStep[];
   summary: string;
 }
+
+export interface SuggestedArticle {
+  name: string;
+  category: string;
+  selected: boolean;
+}
+
+export interface ExtractedConstraints {
+  budget: number | null;
+  deadline_days: number | null;
+  size: string | null;
+  preferences: string[];
+}
+
+export interface BreakdownResponse {
+  articles: SuggestedArticle[];
+  constraints: ExtractedConstraints;
+}
+
+export type WizardStep = "intent" | "breakdown";

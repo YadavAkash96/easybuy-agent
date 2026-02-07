@@ -73,6 +73,28 @@ class CheckoutPlan(BaseModel):
     summary: str
 
 
+class SuggestedArticle(BaseModel):
+    name: str
+    category: str
+    selected: bool = True
+
+
+class ExtractedConstraints(BaseModel):
+    budget: float | None = None
+    deadline_days: int | None = None
+    size: str | None = None
+    preferences: list[str] = []
+
+
+class BreakdownRequest(BaseModel):
+    intent: str
+
+
+class BreakdownResponse(BaseModel):
+    articles: list[SuggestedArticle]
+    constraints: ExtractedConstraints
+
+
 class BriefRequest(BaseModel):
     intent: str
 

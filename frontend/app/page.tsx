@@ -1,5 +1,5 @@
-import Chat from "./components/Chat";
+import ShoppingWizard from "./components/ShoppingWizard";
 
 export default function Home() {
-  return <Chat />;
+  return <ShoppingWizard />;
 }
