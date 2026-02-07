@@ -21,11 +21,25 @@ export interface Product {
   retailer: string;
   variants: ProductVariant[];
   tags: string[];
+  url?: string;
+  rating?: number;
+  description?: string;
+}
+
+export interface ScoreBreakdown {
+  price_score: number;
+  delivery_score: number;
+  rating_score: number;
+  match_score: number;
+  penalty: number;
+  reason: string;
 }
 
 export interface RankedProduct {
   product: Product;
+  rank: number;
   score: number;
+  score_breakdown: ScoreBreakdown;
   reasons: string[];
 }
 
@@ -69,4 +83,21 @@ export interface BreakdownResponse {
   constraints: ExtractedConstraints;
 }
 
-export type WizardStep = "intent" | "breakdown";
+export interface ArticleSearchRequest {
+  article: SuggestedArticle;
+  constraints: ExtractedConstraints;
+  intent: string;
+  num_articles: number;
+}
+
+export interface ArticleSearchResponse {
+  article: SuggestedArticle;
+  ranked_products: RankedProduct[];
+}
+
+export interface ConfirmedItem {
+  article: SuggestedArticle;
+  product: Product;
+}
+
+export type WizardStep = "intent" | "breakdown" | "search" | "cart" | "checkout";

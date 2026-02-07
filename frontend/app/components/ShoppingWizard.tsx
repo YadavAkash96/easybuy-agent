@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type {
   BreakdownResponse,
+  ConfirmedItem,
   ExtractedConstraints,
   SuggestedArticle,
   WizardStep,
@@ -11,6 +12,7 @@ import { postJSON } from "@/lib/api";
 import StepIndicator from "./ui/StepIndicator";
 import IntentStep from "./steps/IntentStep";
 import BreakdownStep from "./steps/BreakdownStep";
+import SearchStep from "./steps/SearchStep";
 
 export default function ShoppingWizard() {
   const [step, setStep] = useState<WizardStep>("intent");
@@ -24,7 +26,7 @@ export default function ShoppingWizard() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
+  const [confirmedItems, setConfirmedItems] = useState<ConfirmedItem[]>([]);
 
   async function handleIntentSubmit(text: string) {
     setIntent(text);
@@ -51,8 +53,12 @@ export default function ShoppingWizard() {
   ) {
     setArticles(confirmedArticles);
     setConstraints(confirmedConstraints);
-    setConfirmed(true);
-    // GOAL 2 will replace this with setStep("search")
+    setStep("search");
+  }
+
+  function handleSearchComplete(items: ConfirmedItem[]) {
+    setConfirmedItems(items);
+    setStep("cart");
   }
 
   return (
@@ -72,7 +78,7 @@ export default function ShoppingWizard() {
           <IntentStep onSubmit={handleIntentSubmit} loading={loading} />
         )}
 
-        {step === "breakdown" && !confirmed && (
+        {step === "breakdown" && (
           <BreakdownStep
             intent={intent}
             articles={articles}
@@ -82,22 +88,42 @@ export default function ShoppingWizard() {
           />
         )}
 
-        {step === "breakdown" && confirmed && (
+        {step === "search" && (
+          <SearchStep
+            articles={articles}
+            constraints={constraints}
+            intent={intent}
+            onComplete={handleSearchComplete}
+            onBack={() => setStep("breakdown")}
+          />
+        )}
+
+        {step === "cart" && (
           <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-900/60">
               <svg className="h-8 w-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-slate-100">Selection confirmed!</h2>
+            <h2 className="text-xl font-bold text-slate-100">Search complete!</h2>
             <p className="text-sm text-slate-400">
-              {articles.filter((a) => a.selected).length} items selected — search &amp; cart coming in GOAL 2
+              {confirmedItems.length} items selected — total ${confirmedItems.reduce((s, i) => s + i.product.price, 0).toFixed(2)}
             </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {confirmedItems.map((item, i) => (
+                <span
+                  key={i}
+                  className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300"
+                >
+                  {item.article.name}: ${item.product.price.toFixed(2)} ({item.product.retailer})
+                </span>
+              ))}
+            </div>
             <button
-              onClick={() => setConfirmed(false)}
+              onClick={() => setStep("search")}
               className="mt-2 rounded-xl border border-slate-700 px-6 py-2 text-sm text-slate-300 hover:text-slate-100"
             >
-              &larr; Edit selection
+              &larr; Re-do search
             </button>
           </div>
         )}

@@ -1,6 +1,13 @@
 """Pydantic models for agentic commerce."""
 
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator
+
+
+class Message(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
 
 
 class ShoppingSpec(BaseModel):
@@ -27,18 +34,32 @@ class ProductVariant(BaseModel):
 class Product(BaseModel):
     id: str
     name: str
-    category: str
+    category: str = ""
     price: float = Field(gt=0)
     delivery_days: int = Field(gt=0)
     retailer: str
-    variants: list[ProductVariant]
-    tags: list[str]
+    variants: list[ProductVariant] = []
+    tags: list[str] = []
+    url: str = ""
+    rating: float = 0.0
+    description: str = ""
+
+
+class ScoreBreakdown(BaseModel):
+    price_score: float = 0.0
+    delivery_score: float = 0.0
+    rating_score: float = 0.0
+    match_score: float = 0.0
+    penalty: float = 1.0
+    reason: str = ""
 
 
 class RankedProduct(BaseModel):
     product: Product
+    rank: int = 0
     score: float
-    reasons: list[str]
+    score_breakdown: ScoreBreakdown = ScoreBreakdown()
+    reasons: list[str] = []
 
 
 class CartItem(BaseModel):
@@ -137,3 +158,15 @@ class CheckoutRequest(BaseModel):
 
 class CheckoutResponse(BaseModel):
     plan: CheckoutPlan
+
+
+class ArticleSearchRequest(BaseModel):
+    article: SuggestedArticle
+    constraints: ExtractedConstraints
+    intent: str
+    num_articles: int = 1
+
+
+class ArticleSearchResponse(BaseModel):
+    article: SuggestedArticle
+    ranked_products: list[RankedProduct]

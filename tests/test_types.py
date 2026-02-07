@@ -4,10 +4,17 @@ import pytest
 from pydantic import ValidationError
 
 from src.core.types import (
+    ArticleSearchRequest,
+    ArticleSearchResponse,
     CartItem,
+    ExtractedConstraints,
+    Message,
     Product,
     ProductVariant,
+    RankedProduct,
+    ScoreBreakdown,
     ShoppingSpec,
+    SuggestedArticle,
 )
 
 
@@ -73,6 +80,113 @@ class TestProduct:
                 variants=[ProductVariant(size="M", color="blue")],
                 tags=[],
             )
+
+
+class TestProductWebSearch:
+    """Products from web search have optional fields and no variants/tags."""
+
+    def test_web_search_product_minimal(self):
+        product = Product(
+            id="ws1",
+            name="North Face Jacket",
+            price=250.0,
+            delivery_days=4,
+            retailer="REI",
+        )
+        assert product.category == ""
+        assert product.variants == []
+        assert product.tags == []
+        assert product.url == ""
+        assert product.rating == 0.0
+        assert product.description == ""
+
+    def test_web_search_product_full(self):
+        product = Product(
+            id="ws2",
+            name="Patagonia Jacket",
+            price=320.0,
+            delivery_days=3,
+            retailer="Patagonia.com",
+            url="https://example.com/jacket",
+            rating=4.5,
+            description="Insulated waterproof jacket",
+        )
+        assert product.url == "https://example.com/jacket"
+        assert product.rating == 4.5
+        assert product.description == "Insulated waterproof jacket"
+
+
+class TestScoreBreakdown:
+    def test_default_breakdown(self):
+        bd = ScoreBreakdown()
+        assert bd.price_score == 0.0
+        assert bd.penalty == 1.0
+        assert bd.reason == ""
+
+    def test_custom_breakdown(self):
+        bd = ScoreBreakdown(
+            price_score=0.9,
+            delivery_score=1.0,
+            rating_score=0.8,
+            match_score=0.7,
+            penalty=0.5,
+            reason="Over budget",
+        )
+        assert bd.penalty == 0.5
+
+
+class TestRankedProduct:
+    def test_ranked_product_with_breakdown(self):
+        product = Product(
+            id="p1",
+            name="Jacket",
+            price=200.0,
+            delivery_days=3,
+            retailer="REI",
+        )
+        rp = RankedProduct(product=product, score=0.85, rank=1)
+        assert rp.rank == 1
+        assert rp.score_breakdown.price_score == 0.0  # default
+
+
+class TestMessage:
+    def test_user_message(self):
+        msg = Message(role="user", content="hello")
+        assert msg.role == "user"
+
+    def test_assistant_message(self):
+        msg = Message(role="assistant", content="hi")
+        assert msg.role == "assistant"
+
+    def test_invalid_role_rejected(self):
+        with pytest.raises(ValidationError):
+            Message(role="system", content="bad")
+
+
+class TestArticleSearchModels:
+    def test_search_request(self):
+        req = ArticleSearchRequest(
+            article=SuggestedArticle(name="Ski Jacket", category="jacket"),
+            constraints=ExtractedConstraints(budget=400, size="M"),
+            intent="skiing outfit",
+            num_articles=5,
+        )
+        assert req.article.name == "Ski Jacket"
+        assert req.num_articles == 5
+
+    def test_search_response(self):
+        product = Product(
+            id="p1",
+            name="Jacket",
+            price=200.0,
+            delivery_days=3,
+            retailer="REI",
+        )
+        resp = ArticleSearchResponse(
+            article=SuggestedArticle(name="Ski Jacket", category="jacket"),
+            ranked_products=[RankedProduct(product=product, score=0.8, rank=1)],
+        )
+        assert len(resp.ranked_products) == 1
 
 
 class TestCartItem:
