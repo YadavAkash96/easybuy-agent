@@ -1,30 +1,31 @@
-# Implementation Plan
+# Implementation Plan — Agentic Commerce (Option B)
 
-## What we built
+## What we are building
 
-A Gemini chat web app skeleton: Python (FastAPI) backend + Next.js frontend, streaming SSE, Docker-first.
+An agentic commerce system that converts a high-level skiing outfit intent into a structured spec, multi-retailer discovery, deterministic ranking, a combined cart, and a simulated checkout.
 
 ## What's real vs faked
 
 ### Real
-- Streaming chat UX (token-by-token rendering)
-- Server-side Gemini call (API key hidden from browser)
-- Pydantic request validation
-- Error handling (missing key, SDK errors, invalid input)
-- Abort/cancel (AbortController)
-- Docker (both services containerized)
-- Tests (18 tests: unit + integration)
-- Linting (ruff)
+- Intent → spec extraction
+- Multi-retailer discovery with mocked catalogs
+- Deterministic ranking with explanations
+- Combined cart + user edits
+- Simulated checkout fan-out
+- Docker-first, tests, linting
 
 ### Faked / deferred
-- Rate limiting
-- Persistence (in-memory only)
-- Auth
-- Analytics
-- Content moderation
+- Live retailer APIs
+- Real checkout / payment
+- Persistence and auth
+- Inventory reservation
 
-## Extension points
-- Add feedback loops (AI role enforcement)
-- Add persistence layer
-- Add tool use / function calling
-- Add multi-model routing
+## Build steps (TDD)
+1. Update docs to the new system (done first).
+2. Add core types for spec, products, cart, checkout.
+3. Write unit tests for ranking + cart aggregation.
+4. Implement ranking + cart aggregation logic.
+5. Add mocked retailer adapters + discovery tests.
+6. Implement API endpoints for brief/discover/rank/cart/checkout.
+7. Update frontend to show spec, cart, and checkout preview.
+8. Run tests + lint.

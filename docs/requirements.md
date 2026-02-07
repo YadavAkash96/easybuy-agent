@@ -1,17 +1,20 @@
-# Requirements
+# Requirements — Agentic Commerce (Option B: Skiing Outfit)
+
+See the full scope in [docs/agentic-commerce-requirements.md](docs/agentic-commerce-requirements.md).
 
 ## Functional
 
-1. User types a message and sees a streaming response from Gemini, token-by-token.
-2. Multi-turn conversation: the full message history is sent with each request.
-3. User can cancel a streaming response mid-flight ("Stop" button).
-4. Missing or invalid API key produces a clear error (503).
-5. Gemini SDK errors produce a clear error (500).
-6. Invalid request payloads are rejected (422).
+1. Capture a high-level shopping intent and output a structured shopping spec (JSON).
+2. Source products from **≥3 retailers** (real or mocked) with price, delivery estimate, variants, and retailer identity.
+3. Rank products using deterministic scoring logic (not LLM-only) and explain the top choice.
+4. Present a **combined cart** across retailers with total cost and delivery per item.
+5. Support user edits (replace/optimize) and re-run ranking + cart aggregation.
+6. Simulated checkout: single address/payment entry, per-retailer fan-out steps.
 
 ## Non-functional
 
-- API key never leaves the server (not exposed to browser).
-- No conversation persistence (in-memory only).
+- AI is structural: required for intent parsing and preference inference (Gemini).
+- Deterministic, testable ranking logic.
+- No real purchases.
 - Docker-first: everything runs via `docker compose`.
 - All backend code linted with `ruff` and tested with `pytest`.

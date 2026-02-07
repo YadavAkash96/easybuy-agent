@@ -1,28 +1,117 @@
-"""Pydantic models for the chat API."""
+"""Pydantic models for agentic commerce."""
 
-from typing import Literal
-
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 
-class Message(BaseModel):
-    role: Literal["user", "assistant"]
-    content: str
+class ShoppingSpec(BaseModel):
+    intent: str
+    budget: float = Field(gt=0)
+    deadline_days: int = Field(gt=0)
+    size: str
+    must_haves: list[str]
+    nice_to_haves: list[str]
 
-    @field_validator("content")
+    @field_validator("intent", "size")
     @classmethod
-    def content_not_blank(cls, v: str) -> str:
+    def not_blank(cls, v: str) -> str:
         if not v.strip():
-            raise ValueError("content must not be blank")
+            raise ValueError("value must not be blank")
         return v
 
 
-class ChatRequest(BaseModel):
-    messages: list[Message]
+class ProductVariant(BaseModel):
+    size: str
+    color: str | None = None
 
-    @field_validator("messages")
-    @classmethod
-    def messages_not_empty(cls, v: list[Message]) -> list[Message]:
-        if not v:
-            raise ValueError("messages must not be empty")
-        return v
+
+class Product(BaseModel):
+    id: str
+    name: str
+    category: str
+    price: float = Field(gt=0)
+    delivery_days: int = Field(gt=0)
+    retailer: str
+    variants: list[ProductVariant]
+    tags: list[str]
+
+
+class RankedProduct(BaseModel):
+    product: Product
+    score: float
+    reasons: list[str]
+
+
+class CartItem(BaseModel):
+    product: Product
+    quantity: int = Field(gt=0)
+    selected_variant: ProductVariant | None = None
+    missing_variant: bool = False
+
+
+class Cart(BaseModel):
+    items: list[CartItem]
+    total_cost: float = Field(ge=0)
+
+
+class Address(BaseModel):
+    line1: str
+    city: str
+    country: str
+
+
+class Payment(BaseModel):
+    card_last4: str
+
+
+class CheckoutStep(BaseModel):
+    retailer: str
+    steps: list[str]
+
+
+class CheckoutPlan(BaseModel):
+    retailer_steps: list[CheckoutStep]
+    summary: str
+
+
+class BriefRequest(BaseModel):
+    intent: str
+
+
+class BriefResponse(BaseModel):
+    spec: ShoppingSpec
+
+
+class DiscoverRequest(BaseModel):
+    spec: ShoppingSpec
+
+
+class DiscoverResponse(BaseModel):
+    products: list[Product]
+
+
+class RankRequest(BaseModel):
+    spec: ShoppingSpec
+    products: list[Product]
+
+
+class RankResponse(BaseModel):
+    ranked: list[RankedProduct]
+
+
+class CartRequest(BaseModel):
+    products: list[Product]
+    size: str
+
+
+class CartResponse(BaseModel):
+    cart: Cart
+
+
+class CheckoutRequest(BaseModel):
+    cart: Cart
+    address: Address
+    payment: Payment
+
+
+class CheckoutResponse(BaseModel):
+    plan: CheckoutPlan

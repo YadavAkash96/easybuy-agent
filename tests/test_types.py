@@ -1,50 +1,91 @@
-"""Unit tests for Pydantic models."""
+"""Unit tests for agentic commerce Pydantic models."""
 
 import pytest
 from pydantic import ValidationError
 
-from src.core.types import ChatRequest, Message
+from src.core.types import (
+    CartItem,
+    Product,
+    ProductVariant,
+    ShoppingSpec,
+)
 
 
-class TestMessage:
-    def test_valid_user_message(self):
-        msg = Message(role="user", content="Hello")
-        assert msg.role == "user"
-        assert msg.content == "Hello"
-
-    def test_valid_assistant_message(self):
-        msg = Message(role="assistant", content="Hi there")
-        assert msg.role == "assistant"
-        assert msg.content == "Hi there"
-
-    def test_invalid_role_rejected(self):
-        with pytest.raises(ValidationError):
-            Message(role="system", content="not allowed")
-
-    def test_empty_content_rejected(self):
-        with pytest.raises(ValidationError):
-            Message(role="user", content="")
-
-    def test_whitespace_only_content_rejected(self):
-        with pytest.raises(ValidationError):
-            Message(role="user", content="   ")
-
-
-class TestChatRequest:
-    def test_valid_request(self):
-        req = ChatRequest(messages=[Message(role="user", content="Hello")])
-        assert len(req.messages) == 1
-
-    def test_empty_messages_rejected(self):
-        with pytest.raises(ValidationError):
-            ChatRequest(messages=[])
-
-    def test_multi_turn_conversation(self):
-        req = ChatRequest(
-            messages=[
-                Message(role="user", content="Hi"),
-                Message(role="assistant", content="Hello!"),
-                Message(role="user", content="How are you?"),
-            ]
+class TestShoppingSpec:
+    def test_valid_spec(self):
+        spec = ShoppingSpec(
+            intent="Downhill skiing outfit",
+            budget=400,
+            deadline_days=5,
+            size="M",
+            must_haves=["waterproof"],
+            nice_to_haves=["insulated"],
         )
-        assert len(req.messages) == 3
+        assert spec.budget == 400
+        assert spec.deadline_days == 5
+
+    def test_invalid_budget_rejected(self):
+        with pytest.raises(ValidationError):
+            ShoppingSpec(
+                intent="Downhill skiing outfit",
+                budget=0,
+                deadline_days=5,
+                size="M",
+                must_haves=["waterproof"],
+                nice_to_haves=[],
+            )
+
+    def test_missing_size_rejected(self):
+        with pytest.raises(ValidationError):
+            ShoppingSpec(
+                intent="Downhill skiing outfit",
+                budget=400,
+                deadline_days=5,
+                size="",
+                must_haves=[],
+                nice_to_haves=[],
+            )
+
+
+class TestProduct:
+    def test_valid_product(self):
+        product = Product(
+            id="p1",
+            name="Ski Jacket",
+            category="jacket",
+            price=199.0,
+            delivery_days=3,
+            retailer="AlpineCo",
+            variants=[ProductVariant(size="M", color="black")],
+            tags=["waterproof"],
+        )
+        assert product.retailer == "AlpineCo"
+
+    def test_invalid_delivery_rejected(self):
+        with pytest.raises(ValidationError):
+            Product(
+                id="p2",
+                name="Ski Pants",
+                category="pants",
+                price=120.0,
+                delivery_days=0,
+                retailer="SnowMart",
+                variants=[ProductVariant(size="M", color="blue")],
+                tags=[],
+            )
+
+
+class TestCartItem:
+    def test_invalid_quantity_rejected(self):
+        product = Product(
+            id="p3",
+            name="Gloves",
+            category="gloves",
+            price=35.0,
+            delivery_days=2,
+            retailer="PeakGear",
+            variants=[ProductVariant(size="M", color="gray")],
+            tags=[],
+        )
+        with pytest.raises(ValidationError):
+            CartItem(product=product, quantity=0)

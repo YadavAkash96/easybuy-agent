@@ -1,19 +1,24 @@
-# AI Role
+# AI Role — Agentic Commerce
 
-## Current (skeleton)
+## Current
 
-Gemini acts as a **chat completion proxy**: it receives the conversation history and generates the next assistant response. This is a **passthrough** role — there is no feedback loop, no adaptation, and no structural AI behavior yet.
+The AI orchestrator **converts high-level intent into a structured shopping spec**, using Gemini, including:
+
+- required items
+- size and material constraints
+- budget and delivery deadline
+- must-haves vs nice-to-haves
+
+This is **structural AI behavior**: the system fails without AI because intent parsing and preference inference are not deterministic.
 
 ### What breaks if AI is removed?
 
-Nothing structural. Without AI, you get a static UI with no responses. The current skeleton exists to wire up the streaming infrastructure.
+- No structured spec → no multi-retailer discovery.
+- No preference inference → ranking becomes ungrounded.
+- No adaptation to user edits → feedback loop fails.
 
-## Future (to be designed)
+## Fixed logic (non-AI)
 
-The skeleton is a foundation for adding **structural AI behavior** such as:
-
-- Inference under ambiguity (e.g., intent detection)
-- Adaptation over time (e.g., learning user preferences)
-- Dynamic decision-making (e.g., routing, tool use)
-
-These will be designed and documented here when implemented.
+- Ranking engine uses deterministic scoring weights.
+- Cart aggregation is rule-based.
+- Checkout orchestration is simulated and scripted.

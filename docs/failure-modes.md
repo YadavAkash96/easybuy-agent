@@ -1,29 +1,31 @@
-# Failure Modes
+# Failure Modes — Agentic Commerce
 
-## A) Missing API key
+## A) Missing Gemini key
 
-- **Symptom**: `GEMINI_API_KEY` env var not set or empty.
-- **Handling**: Backend returns HTTP 503 with `"GEMINI_API_KEY not set"`.
-- **Test**: `test_chat_returns_503_when_no_api_key`
+- **Symptom**: `GEMINI_API_KEY` missing or invalid.
+- **Handling**: Backend returns HTTP 503 with a clear message.
+- **Test**: `test_brief_returns_503_when_no_api_key`
 
-## B) Gemini SDK error
+## B) Invalid shopping spec
 
-- **Symptom**: Network failure, quota exceeded, invalid key.
-- **Handling**: Backend returns HTTP 500 with `"Gemini error: ..."`.
-- **Test**: `test_chat_returns_500_on_gemini_error`
+- **Symptom**: Missing size, budget, or deadline.
+- **Handling**: HTTP 422 with validation details.
+- **Test**: `test_brief_rejects_invalid_spec`
 
-## C) Invalid request
+## C) Retailer data incomplete
 
-- **Symptom**: Empty messages, invalid role, missing fields.
-- **Handling**: Pydantic validation → HTTP 422 with details.
-- **Tests**: `test_chat_rejects_empty_messages`, `test_chat_rejects_invalid_role`
+- **Symptom**: Missing delivery estimate or price.
+- **Handling**: Exclude item from ranking; log warning.
+- **Test**: `test_discovery_filters_incomplete_items`
 
-## D) Client abort
+## D) Budget infeasible
 
-- **Symptom**: User clicks "Stop" or navigates away.
-- **Handling**: `AbortController` cancels the fetch; frontend stops updating.
+- **Symptom**: All options exceed budget or deadline.
+- **Handling**: Return best-effort cart + explanation.
+- **Test**: `test_rank_returns_best_effort_when_over_budget`
 
-## E) Network instability
+## E) Variant mismatch
 
-- **Symptom**: Partial stream, connection drop.
-- **Handling**: Frontend shows partial assistant message + connection error.
+- **Symptom**: Size M unavailable for a required item.
+- **Handling**: Mark as missing + request user change.
+- **Test**: `test_cart_flags_missing_variants`
