@@ -603,7 +603,7 @@ export default function CheckoutPage() {
               onClick={() => router.push("/")}
               className="text-lg font-semibold uppercase tracking-[0.2em] text-slate-200 hover:text-slate-100"
             >
-              Agentic Commerce
+              EasyBuy
             </button>
           </div>
           <div className="flex items-center gap-3">

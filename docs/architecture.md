@@ -1,11 +1,11 @@
-# Architecture — Agentic Commerce
+# Architecture — Easy Buy
 
 ## One-sentence hook
 
-> "We built an AI shopping agent that turns a single sentence into a fully
-> assembled, multi-retailer cart — using Gemini to understand what you
-> actually need, SerpAPI to find real products, and Resend to close the
-> loop with an invoice."
+> "We built Easy Buy — an AI shopping agent that turns a single sentence
+> into a fully assembled, multi-retailer cart — using Gemini to understand
+> what you actually need, SerpAPI to find real products, and Resend to
+> close the loop with an invoice."
 
 ---
 
