@@ -79,6 +79,16 @@ export interface ExtractedConstraints {
   deadline_days: number | null;
   size: string | null;
   preferences: string[];
+  brand_preferences?: string[];
+  budget_ranges?: Record<string, BudgetRange>;
+}
+
+export interface BudgetRange {
+  min: number;
+  max: number;
+  enabled: boolean;
+  current_min?: number | null;
+  current_max?: number | null;
 }
 
 export interface BreakdownResponse {
@@ -86,11 +96,24 @@ export interface BreakdownResponse {
   constraints: ExtractedConstraints;
 }
 
+export interface TradeoffVariant {
+  key: string;
+  label: string;
+  summary: string;
+  constraints: ExtractedConstraints;
+}
+
+export interface TradeoffResponse {
+  variants: TradeoffVariant[];
+}
+
 export interface ArticleSearchRequest {
   article: SuggestedArticle;
   constraints: ExtractedConstraints;
   intent: string;
   num_articles: number;
+  tradeoff_key?: string | null;
+  budget_range?: BudgetRange | null;
 }
 
 export interface ArticleSearchResponse {

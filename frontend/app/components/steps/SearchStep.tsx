@@ -7,6 +7,7 @@ import type {
   RankedProduct,
   ArticleSearchResponse,
   ConfirmedItem,
+  TradeoffVariant,
 } from "@/lib/types";
 import { postJSON } from "@/lib/api";
 
@@ -17,6 +18,10 @@ interface SearchStepProps {
   onComplete: (confirmedItems: ConfirmedItem[]) => void;
   onCheckout: (confirmedItems: ConfirmedItem[]) => void;
   onBack: () => void;
+  tradeoffs: TradeoffVariant[];
+  selectedTradeoff: string | null;
+  onSelectTradeoff: (key: string) => void;
+  onUpdateConstraints: (next: ExtractedConstraints) => void;
 }
 
 export default function SearchStep({
@@ -26,6 +31,10 @@ export default function SearchStep({
   onComplete,
   onCheckout,
   onBack,
+  tradeoffs,
+  selectedTradeoff,
+  onSelectTradeoff,
+  onUpdateConstraints,
 }: SearchStepProps) {
   const selected = articles.filter((a) => a.selected);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -51,17 +60,41 @@ export default function SearchStep({
       setShowRefinement(false);
 
       try {
-        const totalBudget = constraints.budget || 400;
+        const activeTradeoff = tradeoffs.find((t) => t.key === selectedTradeoff);
+        const mergedConstraints = {
+          ...constraints,
+          ...activeTradeoff?.constraints,
+          preferences: [
+            ...(constraints.preferences || []),
+            ...(activeTradeoff?.constraints.preferences || []),
+          ],
+          brand_preferences: [
+            ...(constraints.brand_preferences || []),
+            ...(activeTradeoff?.constraints.brand_preferences || []),
+          ],
+        };
+        const totalBudget = mergedConstraints.budget || 400;
         const remaining = Math.max(totalBudget - spentSoFar, 0);
         const remainingCount = selected.length - itemsConfirmed;
         const searchIntent = extraInstructions
           ? `${intent} — ${extraInstructions}`
           : intent;
+        const budgetRange = constraints.budget_ranges?.[article.category];
+        const effectiveRange = budgetRange?.enabled
+          ? {
+              ...budgetRange,
+              current_min: budgetRange.current_min ?? budgetRange.min,
+              current_max: budgetRange.current_max ?? budgetRange.max,
+            }
+          : null;
+
         const data = await postJSON<ArticleSearchResponse>("/api/search", {
           article,
-          constraints: { ...constraints, budget: remaining },
+          constraints: { ...mergedConstraints, budget: remaining },
           intent: searchIntent,
           num_articles: remainingCount,
+          tradeoff_key: activeTradeoff?.key ?? null,
+          budget_range: effectiveRange,
         });
         setSearchResults(data.ranked_products);
       } catch (e) {
@@ -70,7 +103,7 @@ export default function SearchStep({
         setLoading(false);
       }
     },
-    [intent, constraints, selected.length]
+    [intent, constraints, selected.length, tradeoffs, selectedTradeoff]
   );
 
   useEffect(() => {
@@ -78,7 +111,43 @@ export default function SearchStep({
       doSearch(currentArticle, runningTotal, confirmedItems.length);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex]);
+  }, [currentIndex, selectedTradeoff]);
+
+  useEffect(() => {
+    if (!currentArticle || searchResults.length === 0) return;
+    const prices = searchResults.map((item) => item.product.price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const existing = constraints.budget_ranges?.[currentArticle.category];
+    const nextMin = existing?.min ? (existing.min + minPrice) / 2 : minPrice;
+    const nextMax = existing?.max ? (existing.max + maxPrice) / 2 : maxPrice;
+    const nextRange = {
+      min: nextMin,
+      max: nextMax,
+      enabled: existing?.enabled ?? false,
+      current_min: existing?.current_min ?? minPrice,
+      current_max: existing?.current_max ?? maxPrice,
+    };
+
+    if (
+      existing &&
+      Math.abs(existing.min - nextRange.min) < 0.01 &&
+      Math.abs(existing.max - nextRange.max) < 0.01 &&
+      (existing.current_min ?? 0) === (nextRange.current_min ?? 0) &&
+      (existing.current_max ?? 0) === (nextRange.current_max ?? 0) &&
+      existing.enabled === nextRange.enabled
+    ) {
+      return;
+    }
+
+    onUpdateConstraints({
+      ...constraints,
+      budget_ranges: {
+        ...(constraints.budget_ranges || {}),
+        [currentArticle.category]: nextRange,
+      },
+    });
+  }, [searchResults, currentArticle, constraints, onUpdateConstraints]);
 
   function handleSelect(ranked: RankedProduct) {
     const newItems = [
@@ -192,10 +261,16 @@ export default function SearchStep({
       .slice(0, 2);
 
     const comparison = neighbor
-      ? `Compared with rank ${neighbor.rank}, this option scores higher on ${
-          positives.map((d) => d.label).join(" and ") || "no major criteria"
-        }${negatives.length ? `, and lower on ${negatives.map((d) => d.label).join(" and ")}.` : "."}`
+      ? `Compared with rank ${neighbor.rank}, this option is ${
+          positives.length ? `higher on ${positives.map((d) => d.label).join(" and ")}` : "not higher on major criteria"
+        }${negatives.length ? ` and lower on ${negatives.map((d) => d.label).join(" and ")}` : ""}.`
       : "No alternatives were available for comparison.";
+
+    const deltaLines = deltas
+      .filter((d) => d.delta !== 0)
+      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+      .slice(0, 3)
+      .map((d) => `${d.label}: ${d.delta > 0 ? "+" : ""}${(d.delta * 100).toFixed(0)} pts`);
 
     const topSignals = signals
       .filter((s) => s.score >= 0.75)
@@ -210,6 +285,7 @@ export default function SearchStep({
       comparison,
       justification:
         "This option aligns best with the weighted criteria when compared to nearby alternatives.",
+      deltas: deltaLines,
     };
   }
 
@@ -237,6 +313,44 @@ export default function SearchStep({
           </span>
         </div>
       </div>
+
+      {tradeoffs.length > 0 && (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-100">Tradeoff Explorer</p>
+              <p className="text-xs text-slate-400">
+                Compare how the ranking changes with different priorities.
+              </p>
+            </div>
+            {selectedTradeoff && (
+              <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+                Active: {tradeoffs.find((t) => t.key === selectedTradeoff)?.label}
+              </span>
+            )}
+          </div>
+          <div className="grid gap-2 md:grid-cols-3">
+            {tradeoffs.map((variant) => {
+              const isActive = variant.key === selectedTradeoff;
+              return (
+                <button
+                  key={variant.key}
+                  type="button"
+                  onClick={() => onSelectTradeoff(variant.key)}
+                  className={`rounded-xl border px-4 py-3 text-left transition ${
+                    isActive
+                      ? "border-blue-500 bg-blue-500/10 text-slate-100"
+                      : "border-slate-800 bg-slate-950/40 text-slate-300 hover:border-slate-600"
+                  }`}
+                >
+                  <p className="text-sm font-semibold">{variant.label}</p>
+                  <p className="mt-1 text-xs text-slate-400">{variant.summary}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Error */}
       {error && (
@@ -346,6 +460,18 @@ export default function SearchStep({
                                   </p>
                                   <p>{explanation.comparison}</p>
                                 </div>
+                                {explanation.deltas.length > 0 && (
+                                  <div>
+                                    <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                      Signal deltas
+                                    </p>
+                                    <ul className="list-disc space-y-1 pl-4">
+                                      {explanation.deltas.map((line) => (
+                                        <li key={line}>{line}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
                                 <div>
                                   <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
                                     Final Justification

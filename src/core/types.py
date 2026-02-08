@@ -103,11 +103,21 @@ class SuggestedArticle(BaseModel):
     selected: bool = True
 
 
+class BudgetRange(BaseModel):
+    min: float = Field(ge=0)
+    max: float = Field(ge=0)
+    enabled: bool = False
+    current_min: float | None = None
+    current_max: float | None = None
+
+
 class ExtractedConstraints(BaseModel):
     budget: float | None = None
     deadline_days: int | None = None
     size: str | None = None
     preferences: list[str] = []
+    brand_preferences: list[str] = []
+    budget_ranges: dict[str, BudgetRange] = {}
 
 
 class BreakdownRequest(BaseModel):
@@ -117,6 +127,22 @@ class BreakdownRequest(BaseModel):
 class BreakdownResponse(BaseModel):
     articles: list[SuggestedArticle]
     constraints: ExtractedConstraints
+
+
+class TradeoffVariant(BaseModel):
+    key: str
+    label: str
+    summary: str
+    constraints: ExtractedConstraints
+
+
+class TradeoffRequest(BaseModel):
+    intent: str
+    constraints: ExtractedConstraints
+
+
+class TradeoffResponse(BaseModel):
+    variants: list[TradeoffVariant]
 
 
 class BriefRequest(BaseModel):
@@ -197,6 +223,8 @@ class ArticleSearchRequest(BaseModel):
     constraints: ExtractedConstraints
     intent: str
     num_articles: int = 1
+    tradeoff_key: str | None = None
+    budget_range: BudgetRange | None = None
 
 
 class ArticleSearchResponse(BaseModel):

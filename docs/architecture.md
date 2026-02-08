@@ -5,6 +5,7 @@
 ```
 Browser (Next.js :3000)
   → POST http://localhost:8000/api/brief        { intent } 
+  → POST http://localhost:8000/api/tradeoffs    { intent, constraints }
   → POST http://localhost:8000/api/discover     { spec }
   → POST http://localhost:8000/api/rank         { spec, products }
   → POST http://localhost:8000/api/cart         { ranked_products }
@@ -25,10 +26,10 @@ Browser (Next.js :3000)
 
 | Component | File | Responsibility |
 |-----------|------|----------------|
-| API server | `src/main.py` | `/api/brief`, `/api/discover`, `/api/rank`, `/api/cart`, `/api/checkout`, `/health` |
+| API server | `src/main.py` | `/api/brief`, `/api/tradeoffs`, `/api/discover`, `/api/rank`, `/api/cart`, `/api/checkout`, `/health` |
 | AI orchestrator | `src/ai/` | Intent parsing → structured shopping spec |
 | Retailer adapters | `src/core/retailers/` | Mocked retailer catalogs + search |
-| Ranking engine | `src/core/ranking.py` | Deterministic scoring + return-aware weights |
+| Ranking engine | `src/core/ranking.py` | Deterministic scoring + return-aware weights + soft brand/budget boosts |
 | Explain mode | `src/core/ranking.py` | Post-hoc rationale from ranking signals |
 | Cart aggregator | `src/core/cart.py` | Combined cart across retailers |
 | Checkout orchestrator | `src/core/checkout.py` | Simulated per-retailer checkout steps |

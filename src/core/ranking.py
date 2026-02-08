@@ -1,10 +1,11 @@
 """Deterministic ranking logic for products.
 
 Normalized scoring (0–1 per dimension) with transparent breakdown.
-Formula: (0.30*price + 0.20*delivery + 0.20*rating + 0.15*match + 0.15*return) * penalty
+Formula: (w_price*price + w_delivery*delivery + w_rating*rating
+          + w_match*match + w_return*return) * penalty
 """
 
-from src.core.types import Product, RankedProduct, ScoreBreakdown
+from src.core.types import BudgetRange, Product, RankedProduct, ScoreBreakdown
 
 
 def _price_score(price: float, budget: float) -> float:
@@ -31,13 +32,28 @@ def _rating_score(rating: float) -> float:
     return min(max(rating / 5.0, 0.0), 1.0)
 
 
-def _match_score(product: Product, preferences: list[str] | None) -> float:
-    """Keyword match against product name + description."""
-    if not preferences:
-        return 0.5
-    text = (product.name + " " + product.description).lower()
-    hits = sum(1 for kw in preferences if kw.lower() in text)
-    return min(hits / len(preferences), 1.0)
+def _match_score(
+    product: Product,
+    preferences: list[str] | None,
+    brand_preferences: list[str] | None,
+) -> tuple[float, float]:
+    """Keyword match against product name + description + retailer.
+
+    Returns (preference_score, brand_score).
+    """
+    text = (product.name + " " + product.description + " " + product.retailer).lower()
+
+    pref_score = 0.5
+    if preferences:
+        hits = sum(1 for kw in preferences if kw.lower() in text)
+        pref_score = min(hits / len(preferences), 1.0)
+
+    brand_score = 0.5
+    if brand_preferences:
+        brand_hits = sum(1 for b in brand_preferences if b.lower() in text)
+        brand_score = min(brand_hits / len(brand_preferences), 1.0)
+
+    return pref_score, brand_score
 
 
 def _return_score(retailer: str) -> float:
@@ -65,23 +81,52 @@ def score_product(
     budget: float = 0,
     delivery_days: int = 0,
     preferences: list[str] | None = None,
+    brand_preferences: list[str] | None = None,
+    budget_range: BudgetRange | None = None,
+    weights: dict[str, float] | None = None,
 ) -> tuple[float, ScoreBreakdown, list[str]]:
     """Score a single product. Returns (score, breakdown, reasons)."""
     ps = _price_score(product.price, budget)
     ds = _delivery_score(product.delivery_days, delivery_days)
     rs = _rating_score(product.rating)
-    ms = _match_score(product, preferences)
+    pref_score, brand_score = _match_score(product, preferences, brand_preferences)
+    ms = (0.7 * pref_score + 0.3 * brand_score) if brand_preferences else pref_score
     rts = _return_score(product.retailer)
 
     penalty = 1.0
     penalty_reason = ""
+
+    # Budget range soft boost/penalty
+    range_reason = ""
+    if budget_range and budget_range.enabled:
+        min_price = budget_range.current_min or budget_range.min
+        max_price = budget_range.current_max or budget_range.max
+        if min_price <= product.price <= max_price:
+            ps = min(ps + 0.1, 1.0)
+            range_reason = "Within item budget range"
+        else:
+            ps = max(ps - 0.1, 0.0)
+            range_reason = "Outside item budget range"
 
     # Penalize products way over budget
     if budget > 0 and product.price > budget * 1.5:
         penalty = 0.5
         penalty_reason = "Price >150% of budget"
 
-    raw = 0.30 * ps + 0.20 * ds + 0.20 * rs + 0.15 * ms + 0.15 * rts
+    w = weights or {
+        "price": 0.30,
+        "delivery": 0.20,
+        "rating": 0.20,
+        "match": 0.15,
+        "return": 0.15,
+    }
+    raw = (
+        w["price"] * ps
+        + w["delivery"] * ds
+        + w["rating"] * rs
+        + w["match"] * ms
+        + w["return"] * rts
+    )
     final = raw * penalty
 
     breakdown = ScoreBreakdown(
@@ -107,6 +152,10 @@ def score_product(
         reasons.append("Well rated")
     if ms >= 0.6:
         reasons.append("Good keyword match")
+    if brand_score >= 0.6:
+        reasons.append("Preferred brand match")
+    if range_reason:
+        reasons.append(range_reason)
     if rts >= 0.8:
         reasons.append("Flexible returns")
 
@@ -119,6 +168,9 @@ def rank_products(
     budget: float = 0,
     delivery_days: int = 0,
     preferences: list[str] | None = None,
+    brand_preferences: list[str] | None = None,
+    budget_range: BudgetRange | None = None,
+    weights: dict[str, float] | None = None,
 ) -> list[RankedProduct]:
     """Rank products by normalized scoring. Returns sorted list."""
     ranked: list[RankedProduct] = []
@@ -128,6 +180,9 @@ def rank_products(
             budget=budget,
             delivery_days=delivery_days,
             preferences=preferences,
+            brand_preferences=brand_preferences,
+            budget_range=budget_range,
+            weights=weights,
         )
         ranked.append(
             RankedProduct(

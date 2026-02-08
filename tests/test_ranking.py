@@ -1,7 +1,7 @@
 """Unit tests for ranking logic."""
 
 from src.core.ranking import rank_products, score_product
-from src.core.types import Product, ProductVariant
+from src.core.types import BudgetRange, Product, ProductVariant
 
 
 def _make_product(**overrides) -> Product:
@@ -136,3 +136,31 @@ def test_preferences_boost_score():
         preferences=["waterproof"],
     )
     assert ranked[0].product.id == "match"
+
+
+def test_brand_preference_boosts_score():
+    brand_match = _make_product(id="brand", name="Adidas Jacket", retailer="Adidas")
+    no_brand = _make_product(id="nobrand", name="Generic Jacket", retailer="Shop")
+
+    ranked = rank_products(
+        [no_brand, brand_match],
+        budget=400,
+        delivery_days=5,
+        preferences=["waterproof"],
+        brand_preferences=["adidas"],
+    )
+    assert ranked[0].product.id == "brand"
+
+
+def test_budget_range_soft_boost():
+    in_range = _make_product(id="inrange", price=50.0)
+    out_range = _make_product(id="outrange", price=200.0)
+    budget_range = BudgetRange(min=30, max=80, enabled=True, current_min=30, current_max=80)
+
+    ranked = rank_products(
+        [out_range, in_range],
+        budget=400,
+        delivery_days=5,
+        budget_range=budget_range,
+    )
+    assert ranked[0].product.id == "inrange"

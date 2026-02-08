@@ -7,6 +7,8 @@ import type {
   ConfirmedItem,
   ExtractedConstraints,
   SuggestedArticle,
+  TradeoffResponse,
+  TradeoffVariant,
   WizardStep,
 } from "@/lib/types";
 import { postJSON } from "@/lib/api";
@@ -25,10 +27,14 @@ export default function ShoppingWizard() {
     deadline_days: null,
     size: null,
     preferences: [],
+    brand_preferences: [],
+    budget_ranges: {},
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmedItems, setConfirmedItems] = useState<ConfirmedItem[]>([]);
+  const [tradeoffs, setTradeoffs] = useState<TradeoffVariant[]>([]);
+  const [selectedTradeoff, setSelectedTradeoff] = useState<string | null>(null);
 
   async function handleIntentSubmit(text: string) {
     setIntent(text);
@@ -49,13 +55,31 @@ export default function ShoppingWizard() {
     }
   }
 
-  function handleBreakdownConfirm(
+  async function handleBreakdownConfirm(
     confirmedArticles: SuggestedArticle[],
     confirmedConstraints: ExtractedConstraints
   ) {
     setArticles(confirmedArticles);
     setConstraints(confirmedConstraints);
-    setStep("search");
+    setLoading(true);
+    setError(null);
+
+    try {
+      const tradeoffData = await postJSON<TradeoffResponse>("/api/tradeoffs", {
+        intent,
+        constraints: confirmedConstraints,
+      });
+      setTradeoffs(tradeoffData.variants);
+      setSelectedTradeoff(tradeoffData.variants[0]?.key ?? null);
+      setStep("search");
+    } catch (e) {
+      setError((e as Error).message);
+      setTradeoffs([]);
+      setSelectedTradeoff(null);
+      setStep("search");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleSearchComplete(items: ConfirmedItem[]) {
@@ -123,6 +147,10 @@ export default function ShoppingWizard() {
             onComplete={handleSearchComplete}
             onCheckout={handleCheckout}
             onBack={() => setStep("breakdown")}
+            tradeoffs={tradeoffs}
+            selectedTradeoff={selectedTradeoff}
+            onSelectTradeoff={setSelectedTradeoff}
+            onUpdateConstraints={setConstraints}
           />
         )}
 
