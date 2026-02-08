@@ -6,7 +6,7 @@ import { postJSON } from "@/lib/api";
 
 const GREETING: ChatMessage = {
   role: "assistant",
-  content: "Hi! 👋 What are you shopping for today?",
+  content: "Hey, this is EasyBuy, your super smart shopping assistant! What do you want to shop?",
 };
 
 interface IntentStepProps {
@@ -111,7 +111,7 @@ export default function IntentStep({ onSubmit, loading }: IntentStepProps) {
             <button
               onClick={() => onSubmit(intentSummary)}
               disabled={loading}
-              className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
             >
               {loading ? (
                 <>
