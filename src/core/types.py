@@ -42,7 +42,9 @@ class Product(BaseModel):
     tags: list[str] = []
     url: str = ""
     rating: float = 0.0
+    rating_count: int = 0
     description: str = ""
+    image_url: str | None = None
 
 
 class ScoreBreakdown(BaseModel):

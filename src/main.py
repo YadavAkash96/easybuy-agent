@@ -7,7 +7,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.ai.breakdown import parse_breakdown
 from src.ai.brief import parse_brief
-from src.ai.gemini import DEFAULT_MODEL, search_article
 from src.core.cart import build_cart
 from src.core.checkout import build_checkout_plan
 from src.core.ranking import rank_products
@@ -27,9 +26,11 @@ from src.core.types import (
     DiscoverResponse,
     RankRequest,
     RankResponse,
+    ShoppingSpec,
 )
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+SERPAPI_API_KEY = os.environ.get("SERPAPI_API_KEY", "")
 LLM_MODEL = os.environ.get("LLM_MODEL", "")
 
 app = FastAPI(title="hack-nation-backend")
@@ -85,7 +86,9 @@ def brief(req: BriefRequest):
 
 @app.post("/api/discover", response_model=DiscoverResponse)
 def discover(req: DiscoverRequest):
-    products = discover_products(req.spec)
+    if not SERPAPI_API_KEY:
+        raise HTTPException(status_code=503, detail="SERPAPI_API_KEY not set.")
+    products = discover_products(req.spec, api_key=SERPAPI_API_KEY)
     return {"products": products}
 
 
@@ -102,25 +105,22 @@ def rank(req: RankRequest):
 
 @app.post("/api/search", response_model=ArticleSearchResponse)
 def search(req: ArticleSearchRequest):
-    if not GEMINI_API_KEY:
-        raise HTTPException(status_code=503, detail="GEMINI_API_KEY not set.")
+    if not SERPAPI_API_KEY:
+        raise HTTPException(status_code=503, detail="SERPAPI_API_KEY not set.")
 
     try:
         per_budget = (req.constraints.budget or 400) / max(req.num_articles, 1)
-        constraints_dict = {
-            "budget": per_budget,
-            "deadline_days": req.constraints.deadline_days,
-            "size": req.constraints.size,
-            "preferences": req.constraints.preferences,
-        }
 
-        products = search_article(
-            req.article.name,
-            constraints_dict,
-            req.intent,
-            api_key=GEMINI_API_KEY,
-            model=LLM_MODEL or DEFAULT_MODEL,
+        spec = ShoppingSpec(
+            intent=f"{req.article.name} for {req.intent}",
+            budget=per_budget,
+            deadline_days=req.constraints.deadline_days or 7,
+            size=req.constraints.size or "M",
+            must_haves=req.constraints.preferences,
+            nice_to_haves=[],
         )
+
+        products = discover_products(spec, api_key=SERPAPI_API_KEY)
 
         ranked = rank_products(
             products,

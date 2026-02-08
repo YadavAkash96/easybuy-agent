@@ -58,6 +58,7 @@ async def test_brief_returns_503_when_no_api_key():
 
 @pytest.mark.anyio
 @patch("src.main.discover_products")
+@patch("src.main.SERPAPI_API_KEY", "fake-key")
 async def test_discover_returns_products(mock_discover):
     mock_discover.return_value = [
         Product(
@@ -156,10 +157,10 @@ async def test_checkout_returns_plan(mock_checkout):
 
 
 @pytest.mark.anyio
-@patch("src.main.search_article")
-@patch("src.main.GEMINI_API_KEY", "fake-key")
-async def test_search_returns_ranked_products(mock_search):
-    mock_search.return_value = [
+@patch("src.main.discover_products")
+@patch("src.main.SERPAPI_API_KEY", "fake-key")
+async def test_search_returns_ranked_products(mock_discover):
+    mock_discover.return_value = [
         Product(
             id="ws1",
             name="North Face Jacket",
@@ -206,7 +207,7 @@ async def test_search_returns_ranked_products(mock_search):
 
 
 @pytest.mark.anyio
-@patch("src.main.GEMINI_API_KEY", "")
+@patch("src.main.SERPAPI_API_KEY", "")
 async def test_search_returns_503_when_no_api_key():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -221,4 +222,4 @@ async def test_search_returns_503_when_no_api_key():
         )
 
     assert resp.status_code == 503
-    assert "GEMINI_API_KEY" in resp.json()["detail"]
+    assert "SERPAPI_API_KEY" in resp.json()["detail"]

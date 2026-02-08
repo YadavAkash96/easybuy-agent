@@ -166,20 +166,28 @@ export default function SearchStep({
                 </div>
 
                 <div className="flex items-start justify-between gap-4">
+                  {ranked.product.image_url && (
+                    <img
+                      src={ranked.product.image_url}
+                      alt={ranked.product.name}
+                      className="h-20 w-20 shrink-0 rounded-lg object-cover bg-slate-800"
+                    />
+                  )}
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-slate-100">
-                        {ranked.product.name}
-                      </h4>
-                      {ranked.product.url && (
+                      {ranked.product.url ? (
                         <a
                           href={ranked.product.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-400 hover:text-blue-300"
+                          className="font-medium text-slate-100 hover:text-blue-300"
                         >
-                          View
+                          {ranked.product.name}
                         </a>
+                      ) : (
+                        <h4 className="font-medium text-slate-100">
+                          {ranked.product.name}
+                        </h4>
                       )}
                     </div>
 
@@ -203,6 +211,11 @@ export default function SearchStep({
                         <span className="text-yellow-400">
                           {"★".repeat(Math.round(ranked.product.rating))}{" "}
                           {ranked.product.rating.toFixed(1)}
+                          {ranked.product.rating_count ? (
+                            <span className="text-slate-500 ml-1">
+                              ({ranked.product.rating_count})
+                            </span>
+                          ) : null}
                         </span>
                       ) : null}
                     </div>

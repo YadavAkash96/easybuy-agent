@@ -23,7 +23,9 @@ export interface Product {
   tags: string[];
   url?: string;
   rating?: number;
+  rating_count?: number;
   description?: string;
+  image_url?: string | null;
 }
 
 export interface ScoreBreakdown {
