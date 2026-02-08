@@ -479,7 +479,25 @@ function CheckoutModal({
                   </div>
                 </div>
                 {formError && <p className="mt-3 text-xs text-rose-300">{formError}</p>}
-                <div className="mt-6 flex justify-end">
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setContact({
+                        fullName: "Max Mustermann",
+                        email: "max.mustermann@example.com",
+                        phone: "+49 170 1234567",
+                        address: "Musterstraße 42",
+                        city: "Berlin",
+                        state: "Berlin",
+                        zip: "10115",
+                        country: "Germany",
+                      })
+                    }
+                    className="rounded-xl border border-slate-600 px-4 py-2 text-sm text-slate-300 hover:border-slate-400 hover:text-slate-100"
+                  >
+                    Fill Demo Data
+                  </button>
                   <button
                     type="button"
                     onClick={handleConfirm}
