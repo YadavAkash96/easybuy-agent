@@ -19,10 +19,12 @@ def parse_breakdown(
         "Return ONLY valid JSON with two keys:\n"
         '- "articles": array of objects with "name" (display name) and "category" (slug)\n'
         '- "constraints": object with optional keys "budget" (number), '
-        '"deadline_days" (number), "size" (string), "preferences" (list of strings)\n'
+        '"deadline_days" (number), "size" (string), "preferences" (list of strings), '
+        '"brand_preferences" (list of strings)\n'
         "Example: a skiing outfit might include jacket, pants, goggles, gloves, "
         "helmet, base layer, socks.\n"
         "Extract any budget, deadline, size, and style preferences from the intent."
+        "If specific brands are mentioned (e.g., Adidas, Puma), include them in brand_preferences."
     )
 
     client = genai.Client(api_key=api_key)

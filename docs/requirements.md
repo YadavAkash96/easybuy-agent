@@ -12,6 +12,9 @@ See the full scope in [docs/agentic-commerce-requirements.md](docs/agentic-comme
 6. Simulated checkout: single address/payment entry, per-retailer fan-out steps.
 7. Return-aware ranking using deterministic retailer return scores.
 8. Explain mode: user-facing rationale using observable signals and criteria.
+9. Tradeoff Explorer: AI-generated variants (cheaper, faster, higher quality) with toggle comparison.
+10. Soft brand preferences in intent and review, influencing ranking without hard filters.
+11. Per-item budget ranges (default off) with user-adjustable min/max and soft ranking boosts.
 
 ## Non-functional
 

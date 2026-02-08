@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ExtractedConstraints, SuggestedArticle } from "@/lib/types";
+import type { BudgetRange, ExtractedConstraints, SuggestedArticle } from "@/lib/types";
 import ToggleCard from "../ui/ToggleCard";
 
 interface BreakdownStepProps {
@@ -22,6 +22,9 @@ export default function BreakdownStep({
   const [articles, setArticles] = useState<SuggestedArticle[]>(initialArticles);
   const [constraints, setConstraints] = useState<ExtractedConstraints>(initialConstraints);
   const [newItem, setNewItem] = useState("");
+  const [brandInput, setBrandInput] = useState(
+    (initialConstraints.brand_preferences || []).join(", ")
+  );
 
   function toggleArticle(index: number) {
     setArticles((prev) =>
@@ -37,6 +40,59 @@ export default function BreakdownStep({
       { name, category: name.toLowerCase().replace(/\s+/g, "-"), selected: true },
     ]);
     setNewItem("");
+  }
+
+  function updateBrandPreferences(value: string) {
+    setBrandInput(value);
+    const parsed = value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+    setConstraints((prev) => ({
+      ...prev,
+      brand_preferences: parsed,
+    }));
+  }
+
+  function updateBudgetRange(category: string, update: Partial<BudgetRange>) {
+    setConstraints((prev) => {
+      const fallback = getDefaultRange(category);
+      const existing = prev.budget_ranges?.[category] ?? {
+        min: fallback.min,
+        max: fallback.max,
+        enabled: false,
+        current_min: fallback.min,
+        current_max: fallback.max,
+      };
+      return {
+        ...prev,
+        budget_ranges: {
+          ...(prev.budget_ranges || {}),
+          [category]: {
+            ...existing,
+            ...update,
+            min: existing.min || fallback.min,
+            max: existing.max || fallback.max,
+          },
+        },
+      };
+    });
+  }
+
+  function getDefaultRange(category: string) {
+    const key = category.toLowerCase();
+    const defaults: Record<string, { min: number; max: number }> = {
+      socks: { min: 0, max: 20 },
+      pants: { min: 20, max: 90 },
+      jacket: { min: 60, max: 250 },
+      gloves: { min: 10, max: 60 },
+      goggles: { min: 30, max: 140 },
+      helmet: { min: 40, max: 200 },
+      "base-layer": { min: 15, max: 80 },
+      "base layer": { min: 15, max: 80 },
+      boots: { min: 80, max: 300 },
+    };
+    return defaults[key] ?? { min: 10, max: 200 };
   }
 
   return (
@@ -79,19 +135,126 @@ export default function BreakdownStep({
             {pref}
           </span>
         ))}
+        {(constraints.brand_preferences || []).map((brand) => (
+          <span
+            key={brand}
+            className="rounded-full bg-blue-900/50 px-3 py-1 text-sm text-blue-200"
+          >
+            {brand}
+          </span>
+        ))}
+      </div>
+
+      {/* Brand preferences */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+        <p className="text-sm font-semibold text-slate-100">Brand preferences (soft)</p>
+        <p className="text-xs text-slate-400">
+          Optional. Use commas to separate brands (e.g., Adidas, Puma).
+        </p>
+        <input
+          value={brandInput}
+          onChange={(e) => updateBrandPreferences(e.target.value)}
+          placeholder="Adidas, Puma, The North Face"
+          className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none"
+        />
       </div>
 
       {/* Article toggle grid */}
       <div className="grid gap-3 sm:grid-cols-2">
-        {articles.map((article, i) => (
-          <ToggleCard
-            key={`${article.category}-${i}`}
-            name={article.name}
-            category={article.category}
-            active={article.selected}
-            onToggle={() => toggleArticle(i)}
-          />
-        ))}
+        {articles.map((article, i) => {
+          const fallback = getDefaultRange(article.category);
+          const range = constraints.budget_ranges?.[article.category] ?? {
+            min: fallback.min,
+            max: fallback.max,
+            enabled: false,
+            current_min: fallback.min,
+            current_max: fallback.max,
+          };
+          const enabled = range.enabled;
+          const currentMin = range.current_min ?? range.min ?? fallback.min;
+          const currentMax = range.current_max ?? range.max ?? fallback.max;
+          return (
+            <div
+              key={`${article.category}-${i}`}
+              className="rounded-2xl border border-slate-800 bg-slate-950/40 p-3"
+            >
+            <ToggleCard
+              name={article.name}
+              category={article.category}
+              active={article.selected}
+              onToggle={() => toggleArticle(i)}
+            />
+            <div className="mt-3 rounded-xl border border-slate-800 bg-slate-900/40 p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-200">Item budget range</p>
+                  <p className="text-[11px] text-slate-500">
+                    Default off. When on, boosts items inside range.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateBudgetRange(article.category, {
+                      enabled: !enabled,
+                    })
+                  }
+                  className={`rounded-full px-3 py-1 text-xs ${
+                    enabled ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-300"
+                  }`}
+                >
+                  {enabled ? "On" : "Off"}
+                </button>
+              </div>
+              <div
+                className={`mt-3 overflow-hidden transition-all duration-200 ease-out ${
+                  enabled ? "max-h-24 opacity-100" : "max-h-0 opacity-0"
+                }`}
+              >
+                <div className="relative mt-2 h-10">
+                  <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-slate-700/80" />
+                  <input
+                    type="range"
+                    min={range.min}
+                    max={range.max}
+                    step={1}
+                    value={currentMin}
+                    onChange={(e) => {
+                      const nextMin = Number(e.target.value);
+                      updateBudgetRange(article.category, {
+                        current_min: nextMin,
+                        current_max: Math.max(nextMin, currentMax),
+                      });
+                    }}
+                    className="range-dual absolute inset-0 w-full"
+                    style={{ zIndex: currentMin >= currentMax - 2 ? 5 : 3 }}
+                  />
+                  <input
+                    type="range"
+                    min={range.min}
+                    max={range.max}
+                    step={1}
+                    value={currentMax}
+                    onChange={(e) => {
+                      const nextMax = Number(e.target.value);
+                      updateBudgetRange(article.category, {
+                        current_min: Math.min(currentMin, nextMax),
+                        current_max: nextMax,
+                      });
+                    }}
+                    className="range-dual absolute inset-0 w-full"
+                    style={{ zIndex: 4 }}
+                  />
+                </div>
+                <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
+                  <span>${currentMin}</span>
+                  <span>${currentMax}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          );
+        })}
       </div>
 
       {/* Add extra item */}

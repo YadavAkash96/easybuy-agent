@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from src.core.types import (
     ArticleSearchRequest,
     ArticleSearchResponse,
+    BudgetRange,
     CartItem,
     ExtractedConstraints,
     Message,
@@ -15,6 +16,9 @@ from src.core.types import (
     ScoreBreakdown,
     ShoppingSpec,
     SuggestedArticle,
+    TradeoffRequest,
+    TradeoffResponse,
+    TradeoffVariant,
 )
 
 
@@ -165,11 +169,13 @@ class TestMessage:
 
 class TestArticleSearchModels:
     def test_search_request(self):
+        budget_range = BudgetRange(min=10, max=50, enabled=True, current_min=10, current_max=50)
         req = ArticleSearchRequest(
             article=SuggestedArticle(name="Ski Jacket", category="jacket"),
-            constraints=ExtractedConstraints(budget=400, size="M"),
+            constraints=ExtractedConstraints(budget=400, size="M", brand_preferences=["adidas"]),
             intent="skiing outfit",
             num_articles=5,
+            budget_range=budget_range,
         )
         assert req.article.name == "Ski Jacket"
         assert req.num_articles == 5
@@ -203,3 +209,32 @@ class TestCartItem:
         )
         with pytest.raises(ValidationError):
             CartItem(product=product, quantity=0)
+
+
+class TestTradeoffs:
+    def test_tradeoff_variant(self):
+        variant = TradeoffVariant(
+            key="value",
+            label="Cheaper",
+            summary="Lower budget",
+            constraints=ExtractedConstraints(budget=300, deadline_days=5),
+        )
+        assert variant.key == "value"
+
+    def test_tradeoff_request_response(self):
+        req = TradeoffRequest(
+            intent="ski outfit",
+            constraints=ExtractedConstraints(budget=400, size="M"),
+        )
+        resp = TradeoffResponse(
+            variants=[
+                TradeoffVariant(
+                    key="fast",
+                    label="Faster delivery",
+                    summary="Tighter deadline",
+                    constraints=ExtractedConstraints(deadline_days=3),
+                )
+            ]
+        )
+        assert req.intent == "ski outfit"
+        assert resp.variants[0].key == "fast"

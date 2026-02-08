@@ -9,6 +9,7 @@ from src.ai.breakdown import parse_breakdown
 from src.ai.brief import parse_brief
 from src.ai.intent_chat import chat_intent
 from src.ai.message import generate_customer_message
+from src.ai.tradeoffs import parse_tradeoffs
 from src.core.cart import build_cart
 from src.core.checkout import build_checkout_plan
 from src.core.email import send_invoice_email
@@ -35,6 +36,8 @@ from src.core.types import (
     RankRequest,
     RankResponse,
     ShoppingSpec,
+    TradeoffRequest,
+    TradeoffResponse,
 )
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
@@ -97,6 +100,24 @@ def breakdown(req: BreakdownRequest):
         raise HTTPException(status_code=500, detail=f"AI error: {e}") from e
 
 
+@app.post("/api/tradeoffs", response_model=TradeoffResponse)
+def tradeoffs(req: TradeoffRequest):
+    if not GEMINI_API_KEY:
+        raise HTTPException(status_code=503, detail="GEMINI_API_KEY not set.")
+
+    try:
+        return parse_tradeoffs(
+            req.intent,
+            constraints=req.constraints,
+            api_key=GEMINI_API_KEY,
+            model=LLM_MODEL or None,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=502, detail=f"AI response invalid: {e}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI error: {e}") from e
+
+
 @app.post("/api/brief", response_model=BriefResponse)
 def brief(req: BriefRequest):
     if not GEMINI_API_KEY:
@@ -147,17 +168,61 @@ def search(req: ArticleSearchRequest):
             budget=per_budget,
             deadline_days=req.constraints.deadline_days or 7,
             size=req.constraints.size or "M",
-            must_haves=req.constraints.preferences,
+            must_haves=(req.constraints.preferences or [])
+            + (req.constraints.brand_preferences or []),
             nice_to_haves=[],
         )
 
         products = discover_products(spec, api_key=SERPAPI_API_KEY)
 
+        if req.budget_range and req.budget_range.enabled:
+            min_price = req.budget_range.current_min or req.budget_range.min
+            max_price = req.budget_range.current_max or req.budget_range.max
+            filtered = [
+                product
+                for product in products
+                if min_price <= product.price <= max_price
+            ]
+            if filtered:
+                products = filtered
+
+        weights = None
+        scoring_budget = per_budget
+        if req.tradeoff_key == "value":
+            weights = {
+                "price": 0.45,
+                "delivery": 0.15,
+                "rating": 0.15,
+                "match": 0.1,
+                "return": 0.15,
+            }
+        elif req.tradeoff_key == "fast":
+            weights = {
+                "price": 0.2,
+                "delivery": 0.4,
+                "rating": 0.15,
+                "match": 0.1,
+                "return": 0.15,
+            }
+        elif req.tradeoff_key == "quality":
+            weights = {
+                "price": 0.1,
+                "delivery": 0.1,
+                "rating": 0.5,
+                "match": 0.15,
+                "return": 0.15,
+            }
+            scoring_budget = per_budget * 1.25
+
         ranked = rank_products(
             products,
-            budget=per_budget,
+            budget=scoring_budget,
             delivery_days=req.constraints.deadline_days or 7,
-            preferences=req.constraints.preferences,
+            preferences=(req.constraints.preferences or [])
+            + (req.constraints.brand_preferences or []),
+            brand_preferences=req.constraints.brand_preferences,
+            budget_range=req.budget_range,
+            weights=weights,
         )
 
         return ArticleSearchResponse(

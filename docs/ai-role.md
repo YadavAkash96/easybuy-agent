@@ -8,6 +8,8 @@ The AI orchestrator **converts high-level intent into a structured shopping spec
 - size and material constraints
 - budget and delivery deadline
 - must-haves vs nice-to-haves
+- tradeoff variants for budget, delivery, and quality
+- soft brand preferences
 
 This is **structural AI behavior**: the system fails without AI because intent parsing and preference inference are not deterministic.
 
@@ -16,6 +18,8 @@ This is **structural AI behavior**: the system fails without AI because intent p
 - No structured spec → no multi-retailer discovery.
 - No preference inference → ranking becomes ungrounded.
 - No adaptation to user edits → feedback loop fails.
+- No tradeoff variants → no ability to explore alternate outcomes.
+- No brand extraction → brand intent is ignored in ranking.
 
 ## Fixed logic (non-AI)
 
