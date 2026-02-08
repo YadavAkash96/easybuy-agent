@@ -30,7 +30,7 @@ export default function SearchStep({
   const selected = articles.filter((a) => a.selected);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchResults, setSearchResults] = useState<RankedProduct[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [confirmedItems, setConfirmedItems] = useState<ConfirmedItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showRefinement, setShowRefinement] = useState(false);

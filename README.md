@@ -15,7 +15,11 @@ make up
 # 3. Open http://localhost:3000
 ```
 
-docker compose up
+docker compose build --no-cache frontend                                      
+docker compose up                                                             
+
+docker compose build --no-cache && docker compose up 
+docker compose down                                             
 
 ## Commands
 
