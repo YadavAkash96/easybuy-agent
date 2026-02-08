@@ -7,7 +7,7 @@ from google import genai
 
 from src.core.types import ShoppingSpec
 
-DEFAULT_MODEL = "gemini-2.0-flash"
+DEFAULT_MODEL = "gemini-3-pro-preview"
 
 
 def parse_brief(intent: str, *, api_key: str, model: str | None = None) -> ShoppingSpec:

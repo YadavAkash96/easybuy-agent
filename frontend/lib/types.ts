@@ -103,4 +103,15 @@ export interface ConfirmedItem {
   product: Product;
 }
 
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface IntentChatResponse {
+  reply: string;
+  ready: boolean;
+  intent_summary: string | null;
+}
+
 export type WizardStep = "intent" | "breakdown" | "search" | "cart" | "checkout";

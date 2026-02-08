@@ -7,7 +7,7 @@ from google import genai
 
 from src.core.types import BreakdownResponse, ExtractedConstraints, SuggestedArticle
 
-DEFAULT_MODEL = "gemini-2.0-flash"
+DEFAULT_MODEL = "gemini-3-pro-preview"
 
 
 def parse_breakdown(

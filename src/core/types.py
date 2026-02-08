@@ -192,6 +192,16 @@ class InvoiceResponse(BaseModel):
     email_id: str | None = None
 
 
+class IntentChatRequest(BaseModel):
+    messages: list[Message]
+
+
+class IntentChatResponse(BaseModel):
+    reply: str
+    ready: bool = False
+    intent_summary: str | None = None
+
+
 class ArticleSearchRequest(BaseModel):
     article: SuggestedArticle
     constraints: ExtractedConstraints

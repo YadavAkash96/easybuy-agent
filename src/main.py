@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.ai.breakdown import parse_breakdown
 from src.ai.brief import parse_brief
+from src.ai.intent_chat import chat_intent
 from src.ai.message import generate_customer_message
 from src.core.cart import build_cart
 from src.core.checkout import build_checkout_plan
@@ -27,6 +28,8 @@ from src.core.types import (
     CheckoutResponse,
     DiscoverRequest,
     DiscoverResponse,
+    IntentChatRequest,
+    IntentChatResponse,
     InvoiceRequest,
     InvoiceResponse,
     RankRequest,
@@ -56,6 +59,24 @@ app.add_middleware(
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.post("/api/intent-chat", response_model=IntentChatResponse)
+def intent_chat(req: IntentChatRequest):
+    if not GEMINI_API_KEY:
+        raise HTTPException(status_code=503, detail="GEMINI_API_KEY not set.")
+
+    try:
+        result = chat_intent(
+            [m.model_dump() for m in req.messages],
+            api_key=GEMINI_API_KEY,
+            model=LLM_MODEL or None,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=502, detail=f"AI response invalid: {e}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI error: {e}") from e
 
 
 @app.post("/api/breakdown", response_model=BreakdownResponse)

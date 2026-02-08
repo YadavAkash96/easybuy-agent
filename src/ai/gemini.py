@@ -11,7 +11,7 @@ from google.genai import types
 
 from src.core.types import Message, Product
 
-DEFAULT_MODEL = "gemini-2.0-flash"
+DEFAULT_MODEL = "gemini-3-pro-preview"
 
 logger = logging.getLogger(__name__)
 
