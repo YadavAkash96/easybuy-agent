@@ -5,9 +5,12 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      - SERPAPI_MODE=${SERPAPI_MODE:-dev}
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
+      - ./scripts:/app/scripts
     restart: unless-stopped
 
   frontend:

@@ -1,4 +1,4 @@
-.PHONY: up down build test lint format test-unit test-integration
+.PHONY: up down build test lint format test-unit test-integration dev prod capture-cache
 
 build:
 	docker compose build
@@ -28,3 +28,12 @@ lint:
 format:
 	docker compose build backend
 	docker compose run --rm backend ruff format src/ tests/
+
+dev:
+	SERPAPI_MODE=dev docker compose up --build
+
+prod:
+	SERPAPI_MODE=prod docker compose up --build
+
+capture-cache:
+	docker compose run --rm backend python scripts/capture_serpapi.py

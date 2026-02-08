@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from src.core.retailers import (
     _parse_delivery_days,
     _parse_price,
@@ -10,6 +12,13 @@ from src.core.retailers import (
     discover_products,
 )
 from src.core.types import ShoppingSpec
+
+
+@pytest.fixture(autouse=True)
+def _force_prod_mode():
+    """Retailer tests always use prod (API) mode."""
+    with patch("src.core.retailers._is_dev_mode", return_value=False):
+        yield
 
 
 def test_discover_products_from_three_retailers():

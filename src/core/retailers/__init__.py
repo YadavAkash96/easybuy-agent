@@ -1,11 +1,57 @@
 """Retailer discovery via SerpAPI Google Shopping."""
 
+import json
+import os
 import re
+from pathlib import Path
 from typing import Any
 
 import httpx
 
 from src.core.types import Product, ProductVariant, ShoppingSpec
+
+_CACHE_PATH = Path(__file__).parent / "fixtures" / "serpapi_cache.json"
+_cache: dict[str, Any] | None = None
+
+
+def _is_dev_mode() -> bool:
+    return os.environ.get("SERPAPI_MODE", "dev").lower() == "dev"
+
+
+def _load_cache() -> dict[str, Any]:
+    global _cache  # noqa: PLW0603
+    if _cache is not None:
+        return _cache
+    if _CACHE_PATH.exists():
+        _cache = json.loads(_CACHE_PATH.read_text())
+    else:
+        _cache = {}
+    return _cache
+
+
+def _normalize_key(query: str) -> str:
+    return re.sub(r"\s+", " ", query.strip().lower())
+
+
+def _discover_from_cache(article_name: str) -> dict[str, Any]:
+    cache = _load_cache()
+    key = _normalize_key(article_name)
+    return cache.get(key, {"shopping_results": []})
+
+
+def _discover_from_api(
+    query: str, api_key: str
+) -> dict[str, Any]:
+    params = {
+        "engine": "google_shopping",
+        "q": query,
+        "api_key": api_key,
+    }
+    with httpx.Client(timeout=15.0, follow_redirects=True) as client:
+        resp = client.get("https://serpapi.com/search.json", params=params)
+    if resp.status_code >= 400:
+        raise ValueError("SerpAPI request failed")
+    return resp.json()
 
 
 def discover_products(
@@ -19,18 +65,11 @@ def discover_products(
     parts.append(f"size {spec.size}")
     query = " ".join(parts)
 
-    params = {
-        "engine": "google_shopping",
-        "q": query,
-        "api_key": api_key,
-    }
+    if _is_dev_mode():
+        data = _discover_from_cache(spec.intent)
+    else:
+        data = _discover_from_api(query, api_key)
 
-    with httpx.Client(timeout=15.0, follow_redirects=True) as client:
-        resp = client.get("https://serpapi.com/search.json", params=params)
-    if resp.status_code >= 400:
-        raise ValueError("SerpAPI request failed")
-
-    data = resp.json()
     results = data.get("shopping_results", [])
 
     products: list[Product] = []

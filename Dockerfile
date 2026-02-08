@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir -r requirements-dev.txt
 COPY pyproject.toml ./
 COPY src/ src/
 COPY tests/ tests/
+COPY scripts/ scripts/
 
 EXPOSE 8000
 
