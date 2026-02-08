@@ -13,8 +13,11 @@ def discover_products(
     *,
     api_key: str,
 ) -> list[Product]:
-    must = " ".join(spec.must_haves)
-    query = f"{spec.intent} {must}".strip()
+    parts = [spec.intent]
+    if spec.must_haves:
+        parts.extend(spec.must_haves)
+    parts.append(f"size {spec.size}")
+    query = " ".join(parts)
 
     params = {
         "engine": "google_shopping",
@@ -52,7 +55,7 @@ def _to_product(item: dict[str, Any], size: str) -> Product:
         name=str(item.get("title")),
         category=_infer_category(str(item.get("title", ""))),
         price=_parse_price(item.get("extracted_price") or item.get("price")),
-        delivery_days=5,
+        delivery_days=_parse_delivery_days(item.get("delivery")),
         rating=_parse_rating(item.get("rating")),
         rating_count=_parse_rating_count(item.get("reviews")),
         retailer=str(item.get("source", "unknown")),
@@ -61,6 +64,27 @@ def _to_product(item: dict[str, Any], size: str) -> Product:
         variants=variants,
         tags=[str(tag) for tag in item.get("tags", [])],
     )
+
+
+def _parse_delivery_days(value: Any) -> int:
+    """Estimate delivery days from SerpAPI delivery text.
+
+    Examples: "Free delivery by Tue", "2-day delivery", "Free delivery", None.
+    """
+    if not value:
+        return 5
+    text = str(value).lower()
+    # "2-day", "3 day", "next day", "1-day"
+    day_match = re.search(r"(\d+)\s*-?\s*day", text)
+    if day_match:
+        return max(int(day_match.group(1)), 1)
+    if "next day" in text or "overnight" in text:
+        return 1
+    # "by Mon", "by Tue" — means arriving soon
+    if re.search(r"by\s+(mon|tue|wed|thu|fri|sat|sun)", text):
+        return 3
+    # Has some delivery text but no timing info
+    return 4
 
 
 def _parse_price(value: Any) -> float:

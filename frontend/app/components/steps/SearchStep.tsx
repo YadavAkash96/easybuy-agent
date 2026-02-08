@@ -37,21 +37,29 @@ export default function SearchStep({
   const currentArticle = selected[currentIndex];
 
   const doSearch = useCallback(
-    async (article: SuggestedArticle, extraInstructions?: string) => {
+    async (
+      article: SuggestedArticle,
+      spentSoFar: number,
+      itemsConfirmed: number,
+      extraInstructions?: string,
+    ) => {
       setLoading(true);
       setError(null);
       setSearchResults([]);
       setShowRefinement(false);
 
       try {
+        const totalBudget = constraints.budget || 400;
+        const remaining = Math.max(totalBudget - spentSoFar, 0);
+        const remainingCount = selected.length - itemsConfirmed;
         const searchIntent = extraInstructions
           ? `${intent} — ${extraInstructions}`
           : intent;
         const data = await postJSON<ArticleSearchResponse>("/api/search", {
           article,
-          constraints,
+          constraints: { ...constraints, budget: remaining },
           intent: searchIntent,
-          num_articles: selected.length,
+          num_articles: remainingCount,
         });
         setSearchResults(data.ranked_products);
       } catch (e) {
@@ -65,9 +73,10 @@ export default function SearchStep({
 
   useEffect(() => {
     if (currentArticle) {
-      doSearch(currentArticle);
+      doSearch(currentArticle, runningTotal, confirmedItems.length);
     }
-  }, [currentIndex, currentArticle, doSearch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex]);
 
   function handleSelect(ranked: RankedProduct) {
     const newItems = [
@@ -89,7 +98,7 @@ export default function SearchStep({
 
   function handleRefineSearch() {
     if (refinement.trim()) {
-      doSearch(currentArticle, refinement.trim());
+      doSearch(currentArticle, runningTotal, confirmedItems.length, refinement.trim());
       setRefinement("");
     }
   }
@@ -129,7 +138,7 @@ export default function SearchStep({
         <div className="rounded-xl border border-red-800 bg-red-950/50 px-4 py-3 text-sm text-red-300">
           {error}
           <button
-            onClick={() => doSearch(currentArticle)}
+            onClick={() => doSearch(currentArticle, runningTotal, confirmedItems.length)}
             className="ml-3 underline hover:text-red-200"
           >
             Retry
@@ -316,9 +325,18 @@ export default function SearchStep({
             <span className="text-sm font-medium text-slate-300">
               Cart ({confirmedItems.length} item{confirmedItems.length !== 1 ? "s" : ""})
             </span>
-            <span className="text-sm font-semibold text-emerald-400">
-              ${runningTotal.toFixed(2)}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold text-emerald-400">
+                ${runningTotal.toFixed(2)}
+              </span>
+              {constraints.budget && (
+                <span className={`text-xs ${runningTotal > constraints.budget ? "text-red-400" : "text-slate-500"}`}>
+                  / ${constraints.budget.toFixed(0)} budget
+                  {runningTotal <= constraints.budget && ` (${(constraints.budget - runningTotal).toFixed(0)} left)`}
+                  {runningTotal > constraints.budget && " — over budget!"}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {confirmedItems.map((item, i) => (

@@ -112,7 +112,7 @@ def search(req: ArticleSearchRequest):
         per_budget = (req.constraints.budget or 400) / max(req.num_articles, 1)
 
         spec = ShoppingSpec(
-            intent=f"{req.article.name} for {req.intent}",
+            intent=req.article.name,
             budget=per_budget,
             deadline_days=req.constraints.deadline_days or 7,
             size=req.constraints.size or "M",

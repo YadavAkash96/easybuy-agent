@@ -15,6 +15,8 @@ make up
 # 3. Open http://localhost:3000
 ```
 
+docker compose up
+
 ## Commands
 
 ```bash
