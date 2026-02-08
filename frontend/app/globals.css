@@ -1,5 +1,86 @@
 @import "tailwindcss";
 
+:root {
+	--primary-100: #d4eaf7;
+	--primary-200: #b6ccd8;
+	--primary-300: #3b3c3d;
+	--accent-100: #71c4ef;
+	--accent-200: #00668c;
+	--text-100: #1d1c1c;
+	--text-200: #313d44;
+	--bg-100: #fffefb;
+	--bg-200: #f5f4f1;
+	--bg-300: #cccbc8;
+}
+
+body {
+	background: var(--bg-100);
+	color: var(--text-100);
+}
+
+/* Palette mapping for existing Tailwind utility classes */
+.bg-slate-950 {
+	background-color: var(--bg-100) !important;
+}
+
+.bg-slate-950\/40 {
+	background-color: var(--bg-100) !important;
+}
+
+.bg-slate-900 {
+	background-color: var(--bg-200) !important;
+}
+
+.bg-slate-900\/40,
+.bg-slate-900\/50,
+.bg-slate-900\/60 {
+	background-color: var(--bg-200) !important;
+}
+
+.bg-slate-800 {
+	background-color: var(--bg-300) !important;
+}
+
+.bg-slate-800\/60,
+.bg-slate-800\/50 {
+	background-color: var(--bg-300) !important;
+}
+
+.bg-slate-700 {
+	background-color: var(--bg-300) !important;
+}
+
+.bg-blue-600 {
+	background-color: var(--accent-200) !important;
+}
+
+.bg-blue-500 {
+	background-color: var(--accent-100) !important;
+}
+
+.text-slate-100 {
+	color: var(--text-100) !important;
+}
+
+.text-slate-200,
+.text-slate-300,
+.text-slate-400,
+.text-slate-500,
+.text-slate-600 {
+	color: var(--text-200) !important;
+}
+
+.text-blue-200,
+.text-blue-300,
+.text-blue-400 {
+	color: var(--accent-200) !important;
+}
+
+.border-slate-700,
+.border-slate-800 {
+	border-color: var(--bg-300) !important;
+}
+
 .range-dual {
 	-webkit-appearance: none;
 	appearance: none;

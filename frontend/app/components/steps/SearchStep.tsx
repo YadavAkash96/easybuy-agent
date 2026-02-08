@@ -292,39 +292,39 @@ export default function SearchStep({
   return (
     <div className="space-y-6">
       {/* Progress bar */}
-      <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
-        <span className="text-sm text-slate-400">
+      <div className="flex items-center justify-between rounded-xl border border-[var(--bg-300)] bg-[var(--bg-200)] px-4 py-3">
+        <span className="text-sm text-[var(--text-200)]">
           Article {currentIndex + 1} of {selected.length}
         </span>
-        <span className="text-sm font-medium text-slate-200">
+        <span className="text-sm font-medium text-[var(--text-100)]">
           {currentArticle?.name}
         </span>
         <div className="flex items-center gap-2">
-          <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-800">
+          <div className="h-2 w-24 overflow-hidden rounded-full bg-[var(--bg-300)]">
             <div
-              className="h-full rounded-full bg-blue-600 transition-all"
+              className="h-full rounded-full bg-[var(--accent-200)] transition-all"
               style={{
                 width: `${((currentIndex) / selected.length) * 100}%`,
               }}
             />
           </div>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-[var(--text-200)]">
             {currentIndex}/{selected.length}
           </span>
         </div>
       </div>
 
       {tradeoffs.length > 0 && (
-        <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+        <div className="rounded-xl border border-[var(--bg-300)] bg-[var(--bg-200)] p-4">
           <div className="mb-3 flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-slate-100">Tradeoff Explorer</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-sm font-semibold text-[var(--text-100)]">Tradeoff Explorer</p>
+              <p className="text-xs text-[var(--text-200)]">
                 Compare how the ranking changes with different priorities.
               </p>
             </div>
             {selectedTradeoff && (
-              <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+              <span className="rounded-full border border-[var(--bg-300)] px-3 py-1 text-xs text-[var(--text-200)]">
                 Active: {tradeoffs.find((t) => t.key === selectedTradeoff)?.label}
               </span>
             )}
@@ -339,12 +339,12 @@ export default function SearchStep({
                   onClick={() => onSelectTradeoff(variant.key)}
                   className={`rounded-xl border px-4 py-3 text-left transition ${
                     isActive
-                      ? "border-blue-500 bg-blue-500/10 text-slate-100"
-                      : "border-slate-800 bg-slate-950/40 text-slate-300 hover:border-slate-600"
+                      ? "border-[var(--accent-200)] bg-[var(--accent-100)]/30 text-[var(--text-100)]"
+                      : "border-[var(--bg-300)] bg-[var(--bg-100)] text-[var(--text-200)] hover:border-[var(--accent-100)]"
                   }`}
                 >
                   <p className="text-sm font-semibold">{variant.label}</p>
-                  <p className="mt-1 text-xs text-slate-400">{variant.summary}</p>
+                  <p className="mt-1 text-xs text-[var(--text-200)]">{variant.summary}</p>
                 </button>
               );
             })}
@@ -368,8 +368,8 @@ export default function SearchStep({
       {/* Loading state */}
       {loading && (
         <div className="flex flex-col items-center justify-center gap-3 py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-          <p className="text-sm text-slate-400">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent-200)] border-t-transparent" />
+          <p className="text-sm text-[var(--text-200)]">
             Searching for {currentArticle?.name}...
           </p>
         </div>
@@ -378,7 +378,7 @@ export default function SearchStep({
       {/* Results */}
       {!loading && searchResults.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-slate-100">
+          <h3 className="text-lg font-semibold text-[var(--text-100)]">
             Top results for {currentArticle?.name}
           </h3>
 
@@ -386,10 +386,10 @@ export default function SearchStep({
             {searchResults.map((ranked) => (
               <div
                 key={ranked.product.id}
-                className="relative rounded-xl border border-slate-800 bg-slate-900/50 p-4 transition hover:border-slate-700"
+                className="relative rounded-xl border border-[var(--bg-300)] bg-[var(--bg-100)] p-4 transition hover:border-[var(--accent-100)]"
               >
                 {/* Rank badge */}
-                <div className="absolute -left-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                <div className="absolute -left-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent-200)] text-xs font-bold text-white">
                   #{ranked.rank}
                 </div>
 
@@ -398,7 +398,7 @@ export default function SearchStep({
                     <img
                       src={ranked.product.image_url}
                       alt={ranked.product.name}
-                      className="h-20 w-20 shrink-0 rounded-lg object-cover bg-slate-800"
+                      className="h-20 w-20 shrink-0 rounded-lg object-cover bg-[var(--bg-200)]"
                     />
                   )}
                   <div className="flex-1 space-y-2">
@@ -408,42 +408,42 @@ export default function SearchStep({
                           href={ranked.product.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-medium text-slate-100 hover:text-blue-300"
+                          className="font-medium text-[var(--text-100)] hover:text-[var(--accent-200)]"
                         >
                           {ranked.product.name}
                         </a>
                       ) : (
-                        <h4 className="font-medium text-slate-100">
+                        <h4 className="font-medium text-[var(--text-100)]">
                           {ranked.product.name}
                         </h4>
                       )}
                       <div className="group relative">
                         <button
                           type="button"
-                          className="flex h-5 w-5 items-center justify-center rounded-full border border-slate-700 text-[10px] text-slate-400 hover:border-slate-500 hover:text-slate-200"
+                          className="flex h-5 w-5 items-center justify-center rounded-full border border-[var(--bg-300)] text-[10px] text-[var(--text-200)] hover:border-[var(--accent-100)] hover:text-[var(--text-100)]"
                           aria-label="Explain ranking"
                         >
                           i
                         </button>
-                        <div className="pointer-events-none absolute left-0 top-7 z-10 hidden w-80 rounded-xl border border-slate-700 bg-slate-950/95 p-3 text-xs text-slate-200 shadow-xl group-hover:block">
+                        <div className="pointer-events-none absolute left-0 top-7 z-10 hidden w-80 rounded-xl border border-[var(--bg-300)] bg-[var(--bg-100)] p-3 text-xs text-[var(--text-200)] shadow-xl group-hover:block">
                           {(() => {
                             const explanation = buildExplanation(ranked, searchResults);
                             return (
                               <div className="space-y-2">
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                  <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--text-200)]">
                                     Decision Summary
                                   </p>
                                   <p>{explanation.summary}</p>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                  <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--text-200)]">
                                     Evaluation Criteria Used
                                   </p>
                                   <p>{explanation.criteria.join(", ")}</p>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                  <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--text-200)]">
                                     Signal Assessment
                                   </p>
                                   <ul className="list-disc space-y-1 pl-4">
@@ -455,14 +455,14 @@ export default function SearchStep({
                                   </ul>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                  <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--text-200)]">
                                     Comparison to Alternatives
                                   </p>
                                   <p>{explanation.comparison}</p>
                                 </div>
                                 {explanation.deltas.length > 0 && (
                                   <div>
-                                    <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                    <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--text-200)]">
                                       Signal deltas
                                     </p>
                                     <ul className="list-disc space-y-1 pl-4">
@@ -473,7 +473,7 @@ export default function SearchStep({
                                   </div>
                                 )}
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                  <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--text-200)]">
                                     Final Justification
                                   </p>
                                   <p>{explanation.justification}</p>
@@ -486,27 +486,27 @@ export default function SearchStep({
                     </div>
 
                     {ranked.product.description && (
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-[var(--text-200)]">
                         {ranked.product.description}
                       </p>
                     )}
 
                     <div className="flex flex-wrap gap-3 text-sm">
-                      <span className="text-emerald-400 font-semibold">
+                      <span className="font-semibold text-[var(--accent-200)]">
                         ${ranked.product.price.toFixed(2)}
                       </span>
-                      <span className="text-slate-400">
+                      <span className="text-[var(--text-200)]">
                         {ranked.product.retailer}
                       </span>
-                      <span className="text-slate-400">
+                      <span className="text-[var(--text-200)]">
                         {ranked.product.delivery_days}d delivery
                       </span>
                       {ranked.product.rating ? (
-                        <span className="text-yellow-400">
+                        <span className="text-[#c97a00]">
                           {"★".repeat(Math.round(ranked.product.rating))}{" "}
                           {ranked.product.rating.toFixed(1)}
                           {ranked.product.rating_count ? (
-                            <span className="text-slate-500 ml-1">
+                            <span className="ml-1 text-[var(--text-200)]">
                               ({ranked.product.rating_count})
                             </span>
                           ) : null}
@@ -516,22 +516,22 @@ export default function SearchStep({
 
                     {/* Score breakdown */}
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+                      <span className="rounded-md bg-[var(--bg-200)] px-2 py-0.5 text-xs text-[var(--text-200)]">
                         Score: {(ranked.score * 100).toFixed(0)}%
                       </span>
-                      <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+                      <span className="rounded-md bg-[var(--bg-200)] px-2 py-0.5 text-xs text-[var(--text-200)]">
                         Price: {(ranked.score_breakdown.price_score * 100).toFixed(0)}%
                       </span>
-                      <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+                      <span className="rounded-md bg-[var(--bg-200)] px-2 py-0.5 text-xs text-[var(--text-200)]">
                         Delivery: {(ranked.score_breakdown.delivery_score * 100).toFixed(0)}%
                       </span>
-                      <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+                      <span className="rounded-md bg-[var(--bg-200)] px-2 py-0.5 text-xs text-[var(--text-200)]">
                         Rating: {(ranked.score_breakdown.rating_score * 100).toFixed(0)}%
                       </span>
-                      <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+                      <span className="rounded-md bg-[var(--bg-200)] px-2 py-0.5 text-xs text-[var(--text-200)]">
                         Returns: {(ranked.score_breakdown.return_score * 100).toFixed(0)}%
                       </span>
-                      <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+                      <span className="rounded-md bg-[var(--bg-200)] px-2 py-0.5 text-xs text-[var(--text-200)]">
                         Match: {(ranked.score_breakdown.match_score * 100).toFixed(0)}%
                       </span>
                       {ranked.score_breakdown.reason && (
@@ -546,7 +546,7 @@ export default function SearchStep({
                         {ranked.reasons.map((r, i) => (
                           <span
                             key={i}
-                            className="rounded-full bg-blue-900/40 px-2 py-0.5 text-xs text-blue-300"
+                            className="rounded-full bg-[var(--primary-100)] px-2 py-0.5 text-xs text-[var(--text-200)]"
                           >
                             {r}
                           </span>
@@ -558,7 +558,7 @@ export default function SearchStep({
 
                   <button
                     onClick={() => handleSelect(ranked)}
-                    className="shrink-0 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500"
+                    className="shrink-0 rounded-xl bg-[var(--accent-200)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-100)]"
                   >
                     Select
                   </button>
@@ -571,7 +571,7 @@ export default function SearchStep({
           {!showRefinement && (
             <button
               onClick={handleReject}
-              className="w-full rounded-xl border border-slate-700 py-2 text-sm text-slate-400 hover:text-slate-200"
+              className="w-full rounded-xl border border-[var(--bg-300)] py-2 text-sm text-[var(--text-200)] hover:text-[var(--text-100)]"
             >
               None of these — refine search
             </button>
@@ -586,12 +586,12 @@ export default function SearchStep({
                 onChange={(e) => setRefinement(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleRefineSearch()}
                 placeholder="e.g. cheaper options, different brand..."
-                className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-600 focus:outline-none"
+                className="flex-1 rounded-xl border border-[var(--bg-300)] bg-[var(--bg-100)] px-4 py-2 text-sm text-[var(--text-100)] placeholder-[var(--text-200)] focus:border-[var(--accent-200)] focus:outline-none"
               />
               <button
                 onClick={handleRefineSearch}
                 disabled={!refinement.trim()}
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-40"
+                className="rounded-xl bg-[var(--accent-200)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-100)] disabled:opacity-40"
               >
                 Search again
               </button>
@@ -602,24 +602,30 @@ export default function SearchStep({
 
       {/* No results */}
       {!loading && !error && searchResults.length === 0 && !loading && (
-        <div className="py-12 text-center text-sm text-slate-500">
+        <div className="py-12 text-center text-sm text-[var(--text-200)]">
           No products found. Try adjusting your requirements.
         </div>
       )}
 
       {/* Running cart footer */}
       {confirmedItems.length > 0 && (
-        <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+        <div className="rounded-xl border border-[var(--bg-300)] bg-[var(--bg-200)] p-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-300">
+            <span className="text-sm font-medium text-[var(--text-200)]">
               Cart ({confirmedItems.length} item{confirmedItems.length !== 1 ? "s" : ""})
             </span>
             <div className="flex items-center gap-3">
-              <span className="text-sm font-semibold text-emerald-400">
+              <span className="text-sm font-semibold text-[var(--accent-200)]">
                 ${runningTotal.toFixed(2)}
               </span>
               {constraints.budget && (
-                <span className={`text-xs ${runningTotal > constraints.budget ? "text-red-400" : "text-slate-500"}`}>
+                <span
+                  className={`text-xs ${
+                    runningTotal > constraints.budget
+                      ? "text-rose-500"
+                      : "text-[var(--text-200)]"
+                  }`}
+                >
                   / ${constraints.budget.toFixed(0)} budget
                   {runningTotal <= constraints.budget && ` (${(constraints.budget - runningTotal).toFixed(0)} left)`}
                   {runningTotal > constraints.budget && " — over budget!"}
@@ -631,7 +637,7 @@ export default function SearchStep({
             {confirmedItems.map((item, i) => (
               <span
                 key={i}
-                className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300"
+                className="rounded-full bg-[var(--bg-100)] px-3 py-1 text-xs text-[var(--text-200)]"
               >
                 {item.article.name}: ${item.product.price.toFixed(2)}
               </span>
@@ -640,7 +646,7 @@ export default function SearchStep({
           <div className="mt-4 flex justify-end">
             <button
               onClick={() => onCheckout(confirmedItems)}
-              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+              className="rounded-xl bg-[var(--accent-200)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-100)]"
             >
               Continue to unified checkout
             </button>
@@ -652,7 +658,7 @@ export default function SearchStep({
       <div className="flex justify-start">
         <button
           onClick={onBack}
-          className="rounded-xl border border-slate-700 px-6 py-2 text-sm text-slate-300 hover:text-slate-100"
+          className="rounded-xl border border-[var(--bg-300)] px-6 py-2 text-sm text-[var(--text-200)] hover:text-[var(--text-100)]"
         >
           &larr; Back to selection
         </button>
