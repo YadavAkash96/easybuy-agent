@@ -51,10 +51,10 @@ const stepLabels = [
 ] as const;
 
 const badgeStyles: Record<string, string> = {
-  REI: "bg-emerald-500/10 text-emerald-200 border-emerald-400/30",
-  Amazon: "bg-amber-500/10 text-amber-200 border-amber-400/30",
-  Walmart: "bg-sky-500/10 text-sky-200 border-sky-400/30",
-  Default: "bg-slate-500/10 text-slate-200 border-slate-400/30",
+  REI: "bg-[var(--primary-100)] text-[var(--text-200)] border-[var(--primary-200)]",
+  Amazon: "bg-[var(--primary-100)] text-[var(--text-200)] border-[var(--primary-200)]",
+  Walmart: "bg-[var(--accent-100)] text-[var(--accent-200)] border-[var(--accent-200)]",
+  Default: "bg-[var(--bg-200)] text-[var(--text-200)] border-[var(--bg-300)]",
 };
 
 function formatDate(value: string) {
@@ -88,13 +88,13 @@ function UnifiedCartView({
   }, [items]);
 
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl">
+    <section className="rounded-2xl border border-[var(--bg-300)] bg-[var(--bg-200)] p-6 shadow-xl">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">Unified Cart</h2>
-          <p className="text-sm text-slate-400">All retailers in one place.</p>
+          <p className="text-sm text-[var(--text-200)]">All retailers in one place.</p>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+        <div className="flex items-center gap-2 rounded-full border border-[var(--bg-300)] px-3 py-1 text-xs text-[var(--text-200)]">
           <ShoppingCart className="h-4 w-4" />
           {items.length} items
         </div>
@@ -104,7 +104,7 @@ function UnifiedCartView({
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 md:flex-row md:items-center md:justify-between"
+            className="flex flex-col gap-4 rounded-2xl border border-[var(--bg-300)] bg-[var(--bg-100)] p-4 md:flex-row md:items-center md:justify-between"
           >
             <div className="flex items-center gap-4">
               <img
@@ -113,8 +113,8 @@ function UnifiedCartView({
                 className="h-28 w-28 rounded-2xl object-cover"
               />
               <div>
-                <p className="text-sm font-semibold text-slate-100">{item.name}</p>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                <p className="text-sm font-semibold text-[var(--text-100)]">{item.name}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--text-200)]">
                   <span
                     className={`rounded-full border px-2 py-0.5 ${
                       badgeStyles[item.retailer] ?? badgeStyles.Default
@@ -127,11 +127,11 @@ function UnifiedCartView({
               </div>
             </div>
             <div className="flex items-center justify-between gap-4 md:justify-end">
-              <p className="text-lg font-semibold text-slate-100">${item.price.toFixed(2)}</p>
+              <p className="text-lg font-semibold text-[var(--text-100)]">${item.price.toFixed(2)}</p>
               <button
                 type="button"
                 onClick={() => onSwap(item.id)}
-                className="rounded-lg border border-slate-700 p-2 text-slate-200 hover:border-slate-500"
+                className="rounded-lg border border-[var(--bg-300)] p-2 text-[var(--text-200)] hover:border-[var(--accent-100)]"
                 aria-label="Swap item"
               >
                 <Shuffle className="h-4 w-4" />
@@ -139,7 +139,7 @@ function UnifiedCartView({
               <button
                 type="button"
                 onClick={() => onRemove(item.id)}
-                className="rounded-lg border border-rose-500/30 p-2 text-rose-200 hover:border-rose-400"
+                className="rounded-lg border border-rose-400/40 p-2 text-rose-500 hover:border-rose-500"
                 aria-label="Remove item"
               >
                 <Trash2 className="h-4 w-4" />
@@ -149,14 +149,14 @@ function UnifiedCartView({
         ))}
       </div>
 
-      <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 md:flex-row md:items-center md:justify-between">
+      <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-[var(--bg-300)] bg-[var(--bg-100)] p-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm text-slate-400">Total price</p>
-          <p className="text-2xl font-semibold text-slate-100">${total.toFixed(2)}</p>
+          <p className="text-sm text-[var(--text-200)]">Total price</p>
+          <p className="text-2xl font-semibold text-[var(--text-100)]">${total.toFixed(2)}</p>
         </div>
         <div>
-          <p className="text-sm text-slate-400">Delivery promise</p>
-          <p className="text-sm text-slate-200">
+          <p className="text-sm text-[var(--text-200)]">Delivery promise</p>
+          <p className="text-sm text-[var(--text-200)]">
             Entire outfit arrives by {latestDelivery || "TBD"}
           </p>
         </div>
@@ -164,7 +164,7 @@ function UnifiedCartView({
           type="button"
           onClick={onCheckout}
           disabled={isLocked}
-          className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl bg-[var(--accent-200)] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[var(--accent-100)]/40 disabled:cursor-not-allowed disabled:opacity-50"
         >
           One-Click Order All
         </button>
@@ -303,7 +303,7 @@ function CheckoutModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -312,14 +312,14 @@ function CheckoutModal({
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 40, opacity: 0 }}
-            className="w-full max-w-3xl rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl"
+            className="w-full max-w-3xl rounded-3xl border border-[var(--bg-300)] bg-[var(--bg-100)] p-6 shadow-2xl"
           >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-semibold text-slate-100">
+                <h3 className="text-xl font-semibold text-[var(--text-100)]">
                   {allComplete ? "All Orders Confirmed" : "Orchestrating Checkout"}
                 </h3>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-[var(--text-200)]">
                   Paying with Visa **** 4242 | Shipping to: {contact.city || "—"},
                   {contact.state || "—"}, {contact.country || "—"}
                 </p>
@@ -327,20 +327,20 @@ function CheckoutModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-xs text-slate-400 hover:text-slate-200"
+                className="text-xs text-[var(--text-200)] hover:text-[var(--text-100)]"
               >
                 Close
               </button>
             </div>
 
             {showInvoice || stage === "invoice" ? (
-              <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/70 p-6 text-center">
-                <PackageCheck className="mx-auto h-12 w-12 text-emerald-400" />
-                <h4 className="mt-4 text-lg font-semibold text-slate-100">Final Invoice</h4>
-                <p className="mt-2 text-sm text-slate-400">Total charged: ${total.toFixed(2)}</p>
-                <div className="mt-4 overflow-hidden rounded-xl border border-slate-800">
-                  <table className="w-full text-left text-xs text-slate-300">
-                    <thead className="bg-slate-900/80 text-slate-400">
+              <div className="mt-8 rounded-2xl border border-[var(--bg-300)] bg-[var(--bg-200)] p-6 text-center">
+                <PackageCheck className="mx-auto h-12 w-12 text-[var(--accent-200)]" />
+                <h4 className="mt-4 text-lg font-semibold text-[var(--text-100)]">Final Invoice</h4>
+                <p className="mt-2 text-sm text-[var(--text-200)]">Total charged: ${total.toFixed(2)}</p>
+                <div className="mt-4 overflow-hidden rounded-xl border border-[var(--bg-300)]">
+                  <table className="w-full text-left text-xs text-[var(--text-200)]">
+                    <thead className="bg-[var(--bg-100)] text-[var(--text-200)]">
                       <tr>
                         <th className="px-4 py-2">Item</th>
                         <th className="px-4 py-2">Retailer</th>
@@ -348,7 +348,7 @@ function CheckoutModal({
                         <th className="px-4 py-2 text-right">Price</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800">
+                    <tbody className="divide-y divide-[var(--bg-300)]">
                       {items.map((item) => (
                         <tr key={item.id}>
                           <td className="px-4 py-2">{item.name}</td>
@@ -358,7 +358,7 @@ function CheckoutModal({
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot className="bg-slate-900/70 text-slate-200">
+                    <tfoot className="bg-[var(--bg-100)] text-[var(--text-100)]">
                       <tr>
                         <td className="px-4 py-2" colSpan={3}>
                           Total
@@ -368,122 +368,122 @@ function CheckoutModal({
                     </tfoot>
                   </table>
                 </div>
-                <p className="mt-2 text-sm text-slate-400">
+                <p className="mt-2 text-sm text-[var(--text-200)]">
                   Confirmation emails have been sent to your inbox.
                 </p>
                 {emailStatus === "sending" && (
-                  <p className="mt-2 text-xs text-slate-400">Sending invoice email…</p>
+                  <p className="mt-2 text-xs text-[var(--text-200)]">Sending invoice email…</p>
                 )}
                 {emailStatus === "error" && (
-                  <p className="mt-2 text-xs text-rose-300">
+                  <p className="mt-2 text-xs text-rose-500">
                     Failed to send invoice email. Please try again.
                   </p>
                 )}
                 {emailStatus === "sent" && (
-                  <p className="mt-2 text-xs text-emerald-300">
+                  <p className="mt-2 text-xs text-[var(--accent-200)]">
                     Invoice email sent successfully.
                   </p>
                 )}
               </div>
             ) : stage === "payment" ? (
-              <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
-                <h4 className="text-sm font-semibold text-slate-100">Payment & Shipping</h4>
+              <div className="mt-6 rounded-2xl border border-[var(--bg-300)] bg-[var(--bg-200)] p-6">
+                <h4 className="text-sm font-semibold text-[var(--text-100)]">Payment & Shipping</h4>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="text-xs text-slate-400">Full Name *</label>
+                    <label className="text-xs text-[var(--text-200)]">Full Name *</label>
                     <input
                       value={contact.fullName}
                       onChange={(event) =>
                         setContact((prev) => ({ ...prev, fullName: event.target.value }))
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-lg border border-[var(--bg-300)] bg-[var(--bg-100)] px-3 py-2 text-sm text-[var(--text-100)]"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400">Email *</label>
+                    <label className="text-xs text-[var(--text-200)]">Email *</label>
                     <input
                       value={contact.email}
                       onChange={(event) =>
                         setContact((prev) => ({ ...prev, email: event.target.value }))
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-lg border border-[var(--bg-300)] bg-[var(--bg-100)] px-3 py-2 text-sm text-[var(--text-100)]"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400">Phone *</label>
+                    <label className="text-xs text-[var(--text-200)]">Phone *</label>
                     <input
                       value={contact.phone}
                       onChange={(event) =>
                         setContact((prev) => ({ ...prev, phone: event.target.value }))
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-lg border border-[var(--bg-300)] bg-[var(--bg-100)] px-3 py-2 text-sm text-[var(--text-100)]"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400">Card Number</label>
+                    <label className="text-xs text-[var(--text-200)]">Card Number</label>
                     <input
                       value="**** **** **** 4242"
                       disabled
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300"
+                      className="mt-1 w-full rounded-lg border border-[var(--bg-300)] bg-[var(--bg-100)] px-3 py-2 text-sm text-[var(--text-200)]"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400">Billing ZIP</label>
+                    <label className="text-xs text-[var(--text-200)]">Billing ZIP</label>
                     <input
                       value={contact.zip}
                       onChange={(event) =>
                         setContact((prev) => ({ ...prev, zip: event.target.value }))
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-lg border border-[var(--bg-300)] bg-[var(--bg-100)] px-3 py-2 text-sm text-[var(--text-100)]"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="text-xs text-slate-400">Shipping Address</label>
+                    <label className="text-xs text-[var(--text-200)]">Shipping Address</label>
                     <input
                       value={contact.address}
                       onChange={(event) =>
                         setContact((prev) => ({ ...prev, address: event.target.value }))
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-lg border border-[var(--bg-300)] bg-[var(--bg-100)] px-3 py-2 text-sm text-[var(--text-100)]"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400">City *</label>
+                    <label className="text-xs text-[var(--text-200)]">City *</label>
                     <input
                       value={contact.city}
                       onChange={(event) =>
                         setContact((prev) => ({ ...prev, city: event.target.value }))
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-lg border border-[var(--bg-300)] bg-[var(--bg-100)] px-3 py-2 text-sm text-[var(--text-100)]"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400">State *</label>
+                    <label className="text-xs text-[var(--text-200)]">State *</label>
                     <input
                       value={contact.state}
                       onChange={(event) =>
                         setContact((prev) => ({ ...prev, state: event.target.value }))
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-lg border border-[var(--bg-300)] bg-[var(--bg-100)] px-3 py-2 text-sm text-[var(--text-100)]"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400">Country *</label>
+                    <label className="text-xs text-[var(--text-200)]">Country *</label>
                     <input
                       value={contact.country}
                       onChange={(event) =>
                         setContact((prev) => ({ ...prev, country: event.target.value }))
                       }
-                      className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+                      className="mt-1 w-full rounded-lg border border-[var(--bg-300)] bg-[var(--bg-100)] px-3 py-2 text-sm text-[var(--text-100)]"
                     />
                   </div>
                 </div>
-                {formError && <p className="mt-3 text-xs text-rose-300">{formError}</p>}
+                {formError && <p className="mt-3 text-xs text-rose-500">{formError}</p>}
                 <div className="mt-6 flex justify-end">
                   <button
                     type="button"
                     onClick={handleConfirm}
-                    className="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900"
+                    className="rounded-xl bg-[var(--accent-200)] px-5 py-2 text-sm font-semibold text-white"
                   >
                     Confirm & Start Ordering
                   </button>
@@ -497,17 +497,17 @@ function CheckoutModal({
                   return (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-950/70 p-4"
+                      className="flex items-center justify-between rounded-2xl border border-[var(--bg-300)] bg-[var(--bg-100)] p-4"
                     >
                       <div>
-                        <p className="text-sm font-semibold text-slate-100">{item.retailer}</p>
-                        <p className="text-xs text-slate-400">{item.name}</p>
+                        <p className="text-sm font-semibold text-[var(--text-100)]">{item.retailer}</p>
+                        <p className="text-xs text-[var(--text-200)]">{item.name}</p>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-200">
+                      <div className="flex items-center gap-2 text-sm text-[var(--text-200)]">
                         {isComplete ? (
-                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                          <CheckCircle2 className="h-4 w-4 text-[var(--accent-200)]" />
                         ) : (
-                          <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                          <Loader2 className="h-4 w-4 animate-spin text-[var(--accent-200)]" />
                         )}
                         <span>{stepLabels[step]}</span>
                       </div>
@@ -521,7 +521,7 @@ function CheckoutModal({
                       type="button"
                       onClick={handleSendInvoice}
                       disabled={emailStatus === "sending"}
-                      className="mt-2 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                      className="mt-2 inline-flex items-center gap-2 rounded-xl bg-[var(--accent-200)] px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
                     >
                       <ReceiptText className="h-4 w-4" />
                       View Invoice
