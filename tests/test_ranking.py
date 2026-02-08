@@ -66,6 +66,7 @@ def test_score_product_returns_breakdown():
     assert breakdown.delivery_score == 1.0  # well within deadline
     assert breakdown.rating_score == 0.9  # 4.5 / 5.0
     assert breakdown.match_score == 1.0  # "waterproof" in description
+    assert breakdown.return_score >= 0.0
     assert isinstance(reasons, list)
 
 

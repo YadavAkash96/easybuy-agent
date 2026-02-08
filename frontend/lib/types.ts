@@ -33,6 +33,7 @@ export interface ScoreBreakdown {
   delivery_score: number;
   rating_score: number;
   match_score: number;
+  return_score: number;
   penalty: number;
   reason: string;
 }

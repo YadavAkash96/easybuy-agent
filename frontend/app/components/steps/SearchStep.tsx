@@ -110,6 +110,109 @@ export default function SearchStep({
     0
   );
 
+  function influenceLabel(score: number) {
+    if (score >= 0.75) return "high";
+    if (score >= 0.5) return "medium";
+    return "low";
+  }
+
+  function buildExplanation(target: RankedProduct, allRanked: RankedProduct[]) {
+    const criteria = [
+      "Price vs budget",
+      "Delivery speed",
+      "Rating quality",
+      "Keyword match",
+      "Return friendliness",
+    ];
+
+    const signals = [
+      {
+        label: "Price",
+        score: target.score_breakdown.price_score,
+      },
+      {
+        label: "Delivery",
+        score: target.score_breakdown.delivery_score,
+      },
+      {
+        label: "Rating",
+        score: target.score_breakdown.rating_score,
+      },
+      {
+        label: "Match",
+        score: target.score_breakdown.match_score,
+      },
+      {
+        label: "Returns",
+        score: target.score_breakdown.return_score,
+      },
+    ];
+
+    const sorted = [...allRanked].sort((a, b) => a.rank - b.rank);
+    const index = sorted.findIndex((item) => item.rank === target.rank);
+    const neighbor =
+      index === 0
+        ? sorted[index + 1] ?? null
+        : sorted[index - 1] ?? null;
+
+    const deltas = neighbor
+      ? [
+          {
+            label: "Price",
+            delta: target.score_breakdown.price_score - neighbor.score_breakdown.price_score,
+          },
+          {
+            label: "Delivery",
+            delta:
+              target.score_breakdown.delivery_score -
+              neighbor.score_breakdown.delivery_score,
+          },
+          {
+            label: "Rating",
+            delta: target.score_breakdown.rating_score - neighbor.score_breakdown.rating_score,
+          },
+          {
+            label: "Match",
+            delta: target.score_breakdown.match_score - neighbor.score_breakdown.match_score,
+          },
+          {
+            label: "Returns",
+            delta: target.score_breakdown.return_score - neighbor.score_breakdown.return_score,
+          },
+        ]
+      : [];
+
+    const positives = deltas
+      .filter((d) => d.delta > 0)
+      .sort((a, b) => b.delta - a.delta)
+      .slice(0, 2);
+    const negatives = deltas
+      .filter((d) => d.delta < 0)
+      .sort((a, b) => a.delta - b.delta)
+      .slice(0, 2);
+
+    const comparison = neighbor
+      ? `Compared with rank ${neighbor.rank}, this option scores higher on ${
+          positives.map((d) => d.label).join(" and ") || "no major criteria"
+        }${negatives.length ? `, and lower on ${negatives.map((d) => d.label).join(" and ")}.` : "."}`
+      : "No alternatives were available for comparison.";
+
+    const topSignals = signals
+      .filter((s) => s.score >= 0.75)
+      .map((s) => s.label)
+      .slice(0, 2);
+
+    return {
+      summary:
+        `Selected based on strongest ${topSignals.join(" and ") || "overall balance"} signals.`,
+      criteria,
+      signals,
+      comparison,
+      justification:
+        "This option aligns best with the weighted criteria when compared to nearby alternatives.",
+    };
+  }
+
   return (
     <div className="space-y-6">
       {/* Progress bar */}
@@ -200,6 +303,60 @@ export default function SearchStep({
                           {ranked.product.name}
                         </h4>
                       )}
+                      <div className="group relative">
+                        <button
+                          type="button"
+                          className="flex h-5 w-5 items-center justify-center rounded-full border border-slate-700 text-[10px] text-slate-400 hover:border-slate-500 hover:text-slate-200"
+                          aria-label="Explain ranking"
+                        >
+                          i
+                        </button>
+                        <div className="pointer-events-none absolute left-0 top-7 z-10 hidden w-80 rounded-xl border border-slate-700 bg-slate-950/95 p-3 text-xs text-slate-200 shadow-xl group-hover:block">
+                          {(() => {
+                            const explanation = buildExplanation(ranked, searchResults);
+                            return (
+                              <div className="space-y-2">
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                    Decision Summary
+                                  </p>
+                                  <p>{explanation.summary}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                    Evaluation Criteria Used
+                                  </p>
+                                  <p>{explanation.criteria.join(", ")}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                    Signal Assessment
+                                  </p>
+                                  <ul className="list-disc space-y-1 pl-4">
+                                    {explanation.signals.map((signal) => (
+                                      <li key={signal.label}>
+                                        {signal.label}: {influenceLabel(signal.score)} influence
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                    Comparison to Alternatives
+                                  </p>
+                                  <p>{explanation.comparison}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                                    Final Justification
+                                  </p>
+                                  <p>{explanation.justification}</p>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
                     </div>
 
                     {ranked.product.description && (
@@ -246,6 +403,9 @@ export default function SearchStep({
                         Rating: {(ranked.score_breakdown.rating_score * 100).toFixed(0)}%
                       </span>
                       <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
+                        Returns: {(ranked.score_breakdown.return_score * 100).toFixed(0)}%
+                      </span>
+                      <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
                         Match: {(ranked.score_breakdown.match_score * 100).toFixed(0)}%
                       </span>
                       {ranked.score_breakdown.reason && (
@@ -267,6 +427,7 @@ export default function SearchStep({
                         ))}
                       </div>
                     )}
+
                   </div>
 
                   <button

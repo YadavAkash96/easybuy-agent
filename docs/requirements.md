@@ -10,6 +10,8 @@ See the full scope in [docs/agentic-commerce-requirements.md](docs/agentic-comme
 4. Present a **combined cart** across retailers with total cost and delivery per item.
 5. Support user edits (replace/optimize) and re-run ranking + cart aggregation.
 6. Simulated checkout: single address/payment entry, per-retailer fan-out steps.
+7. Return-aware ranking using deterministic retailer return scores.
+8. Explain mode: user-facing rationale using observable signals and criteria.
 
 ## Non-functional
 

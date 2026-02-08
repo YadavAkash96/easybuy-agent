@@ -27,6 +27,7 @@ type CartItem = {
   url?: string;
   rating?: number;
   ratingCount?: number;
+  swapped?: boolean;
 };
 
 type ContactForm = {
@@ -562,11 +563,13 @@ export default function CheckoutPage() {
     setItems((prev) =>
       prev.map((item) =>
         item.id === id
-          ? {
-              ...item,
-              name: `${item.name} (Swap Requested)`,
-              price: Number((item.price * 0.95).toFixed(2)),
-            }
+          ? item.swapped
+            ? item
+            : {
+                ...item,
+                swapped: true,
+                price: Number((item.price * 0.95).toFixed(2)),
+              }
           : item,
       ),
     );
@@ -577,8 +580,13 @@ export default function CheckoutPage() {
       <div className="mx-auto max-w-6xl space-y-8">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Agentic Commerce</p>
-            <h1 className="text-3xl font-semibold">Unified Cart</h1>
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              className="text-lg font-semibold uppercase tracking-[0.2em] text-slate-200 hover:text-slate-100"
+            >
+              Agentic Commerce
+            </button>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -586,7 +594,7 @@ export default function CheckoutPage() {
               onClick={() => router.push("/")}
               className="rounded-full border border-slate-800 px-4 py-2 text-xs text-slate-300 hover:border-slate-600"
             >
-              Back to results
+              Back
             </button>
             <div className="flex items-center gap-2 rounded-full border border-slate-800 px-4 py-2 text-xs text-slate-300">
               <CreditCard className="h-4 w-4" />

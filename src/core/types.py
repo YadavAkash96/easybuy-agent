@@ -52,6 +52,7 @@ class ScoreBreakdown(BaseModel):
     delivery_score: float = 0.0
     rating_score: float = 0.0
     match_score: float = 0.0
+    return_score: float = 0.0
     penalty: float = 1.0
     reason: str = ""
 

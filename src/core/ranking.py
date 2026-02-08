@@ -1,7 +1,7 @@
 """Deterministic ranking logic for products.
 
 Normalized scoring (0–1 per dimension) with transparent breakdown.
-Formula: (0.35*price + 0.25*delivery + 0.20*rating + 0.20*match) * penalty
+Formula: (0.30*price + 0.20*delivery + 0.20*rating + 0.15*match + 0.15*return) * penalty
 """
 
 from src.core.types import Product, RankedProduct, ScoreBreakdown
@@ -40,6 +40,25 @@ def _match_score(product: Product, preferences: list[str] | None) -> float:
     return min(hits / len(preferences), 1.0)
 
 
+def _return_score(retailer: str) -> float:
+    """Heuristic return-friendliness by retailer (0–1)."""
+    normalized = (retailer or "").lower()
+    scores = {
+        "rei": 0.95,
+        "patagonia": 0.9,
+        "north face": 0.85,
+        "amazon": 0.75,
+        "walmart": 0.7,
+        "target": 0.7,
+        "backcountry": 0.8,
+        "evo": 0.8,
+    }
+    for key, value in scores.items():
+        if key in normalized:
+            return value
+    return 0.6
+
+
 def score_product(
     product: Product,
     *,
@@ -52,6 +71,7 @@ def score_product(
     ds = _delivery_score(product.delivery_days, delivery_days)
     rs = _rating_score(product.rating)
     ms = _match_score(product, preferences)
+    rts = _return_score(product.retailer)
 
     penalty = 1.0
     penalty_reason = ""
@@ -61,7 +81,7 @@ def score_product(
         penalty = 0.5
         penalty_reason = "Price >150% of budget"
 
-    raw = 0.35 * ps + 0.25 * ds + 0.20 * rs + 0.20 * ms
+    raw = 0.30 * ps + 0.20 * ds + 0.20 * rs + 0.15 * ms + 0.15 * rts
     final = raw * penalty
 
     breakdown = ScoreBreakdown(
@@ -69,6 +89,7 @@ def score_product(
         delivery_score=round(ds, 3),
         rating_score=round(rs, 3),
         match_score=round(ms, 3),
+        return_score=round(rts, 3),
         penalty=penalty,
         reason=penalty_reason,
     )
@@ -86,6 +107,8 @@ def score_product(
         reasons.append("Well rated")
     if ms >= 0.6:
         reasons.append("Good keyword match")
+    if rts >= 0.8:
+        reasons.append("Flexible returns")
 
     return round(final, 4), breakdown, reasons
 

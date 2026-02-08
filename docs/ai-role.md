@@ -20,5 +20,7 @@ This is **structural AI behavior**: the system fails without AI because intent p
 ## Fixed logic (non-AI)
 
 - Ranking engine uses deterministic scoring weights.
+- Return-aware scoring uses a fixed retailer return-score map.
 - Cart aggregation is rule-based.
 - Checkout orchestration is simulated and scripted.
+- Explain mode is a post-hoc rationale based on observable signals (no internal reasoning).

@@ -12,7 +12,8 @@ Browser (Next.js :3000)
   → FastAPI backend (:8000)
     → AI Orchestrator (intent → spec, Gemini)
     → Retailer adapters (≥3, mocked or real)
-    → Ranking engine (deterministic scoring)
+    → Ranking engine (deterministic scoring + return-aware weights)
+    → Explain mode (post-hoc rationale)
     → Cart aggregator
     → Checkout orchestrator (simulated fan-out)
   ← Browser renders cart + ranking explanations
@@ -27,7 +28,8 @@ Browser (Next.js :3000)
 | API server | `src/main.py` | `/api/brief`, `/api/discover`, `/api/rank`, `/api/cart`, `/api/checkout`, `/health` |
 | AI orchestrator | `src/ai/` | Intent parsing → structured shopping spec |
 | Retailer adapters | `src/core/retailers/` | Mocked retailer catalogs + search |
-| Ranking engine | `src/core/ranking.py` | Deterministic scoring + explanation |
+| Ranking engine | `src/core/ranking.py` | Deterministic scoring + return-aware weights |
+| Explain mode | `src/core/ranking.py` | Post-hoc rationale from ranking signals |
 | Cart aggregator | `src/core/cart.py` | Combined cart across retailers |
 | Checkout orchestrator | `src/core/checkout.py` | Simulated per-retailer checkout steps |
 | Types | `src/core/types.py` | Pydantic models for spec, products, cart, checkout |
