@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type {
   BreakdownResponse,
   ConfirmedItem,
@@ -15,6 +16,7 @@ import BreakdownStep from "./steps/BreakdownStep";
 import SearchStep from "./steps/SearchStep";
 
 export default function ShoppingWizard() {
+  const router = useRouter();
   const [step, setStep] = useState<WizardStep>("intent");
   const [intent, setIntent] = useState("");
   const [articles, setArticles] = useState<SuggestedArticle[]>([]);
@@ -61,6 +63,31 @@ export default function ShoppingWizard() {
     setStep("cart");
   }
 
+  function handleCheckout(items: ConfirmedItem[] = confirmedItems) {
+    const today = new Date();
+    const cartItems = items.map((item, index) => {
+      const delivery = new Date(
+        today.getTime() + (item.product.delivery_days || 0) * 24 * 60 * 60 * 1000,
+      );
+
+      return {
+        id: item.product.id || `${item.article.name}-${index}`,
+        name: item.product.name,
+        price: item.product.price,
+        retailer: item.product.retailer,
+        deliveryDate: delivery.toISOString(),
+        image: item.product.image_url || "https://placehold.co/200x200?text=Item",
+        status: "pending" as const,
+        url: item.product.url,
+        rating: item.product.rating,
+        ratingCount: item.product.rating_count,
+      };
+    });
+
+    localStorage.setItem("agentic_cart", JSON.stringify(cartItems));
+    router.push("/checkout");
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-4xl px-4 py-6">
@@ -94,6 +121,7 @@ export default function ShoppingWizard() {
             constraints={constraints}
             intent={intent}
             onComplete={handleSearchComplete}
+            onCheckout={handleCheckout}
             onBack={() => setStep("breakdown")}
           />
         )}
@@ -119,6 +147,12 @@ export default function ShoppingWizard() {
                 </span>
               ))}
             </div>
+            <button
+              onClick={() => handleCheckout()}
+              className="rounded-xl bg-blue-600 px-6 py-2 text-sm font-semibold text-white"
+            >
+              Continue to unified checkout
+            </button>
             <button
               onClick={() => setStep("search")}
               className="mt-2 rounded-xl border border-slate-700 px-6 py-2 text-sm text-slate-300 hover:text-slate-100"

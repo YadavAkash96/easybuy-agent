@@ -15,6 +15,7 @@ interface SearchStepProps {
   constraints: ExtractedConstraints;
   intent: string;
   onComplete: (confirmedItems: ConfirmedItem[]) => void;
+  onCheckout: (confirmedItems: ConfirmedItem[]) => void;
   onBack: () => void;
 }
 
@@ -23,6 +24,7 @@ export default function SearchStep({
   constraints,
   intent,
   onComplete,
+  onCheckout,
   onBack,
 }: SearchStepProps) {
   const selected = articles.filter((a) => a.selected);
@@ -347,6 +349,14 @@ export default function SearchStep({
                 {item.article.name}: ${item.product.price.toFixed(2)}
               </span>
             ))}
+          </div>
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={() => onCheckout(confirmedItems)}
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+            >
+              Continue to unified checkout
+            </button>
           </div>
         </div>
       )}

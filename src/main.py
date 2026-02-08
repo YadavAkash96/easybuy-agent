@@ -7,8 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.ai.breakdown import parse_breakdown
 from src.ai.brief import parse_brief
+from src.ai.message import generate_customer_message
 from src.core.cart import build_cart
 from src.core.checkout import build_checkout_plan
+from src.core.email import send_invoice_email
+from src.core.invoice import build_invoice_pdf
 from src.core.ranking import rank_products
 from src.core.retailers import discover_products
 from src.core.types import (
@@ -24,6 +27,8 @@ from src.core.types import (
     CheckoutResponse,
     DiscoverRequest,
     DiscoverResponse,
+    InvoiceRequest,
+    InvoiceResponse,
     RankRequest,
     RankResponse,
     ShoppingSpec,
@@ -32,6 +37,11 @@ from src.core.types import (
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 SERPAPI_API_KEY = os.environ.get("SERPAPI_API_KEY", "")
 LLM_MODEL = os.environ.get("LLM_MODEL", "")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "")
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+RESEND_FROM = os.environ.get("RESEND_FROM", "Agentic Commerce <ak1820098@gmail.com>")
+RESEND_TO = os.environ.get("RESEND_TO", "")
 
 app = FastAPI(title="hack-nation-backend")
 
@@ -147,3 +157,30 @@ def cart(req: CartRequest):
 def checkout(req: CheckoutRequest):
     plan = build_checkout_plan(req.cart, req.address, req.payment)
     return {"plan": plan}
+
+
+@app.post("/api/invoice/email", response_model=InvoiceResponse)
+def send_invoice(req: InvoiceRequest):
+    if not RESEND_API_KEY:
+        raise HTTPException(status_code=503, detail="RESEND_API_KEY not set.")
+    if not OPENAI_API_KEY:
+        raise HTTPException(status_code=503, detail="OPENAI_API_KEY not set.")
+
+    try:
+        message = generate_customer_message(
+            api_key=OPENAI_API_KEY,
+            customer_name=req.customer.full_name,
+            model=OPENAI_MODEL or None,
+        )
+        pdf_bytes = build_invoice_pdf(req)
+        email_id = send_invoice_email(
+            api_key=RESEND_API_KEY,
+            from_email=RESEND_FROM,
+            to_email=RESEND_TO or None,
+            invoice=req,
+            message=message,
+            pdf_bytes=pdf_bytes,
+        )
+        return {"message": message, "email_id": email_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Email error: {e}") from e
