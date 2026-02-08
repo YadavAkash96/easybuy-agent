@@ -1,6 +1,42 @@
-# Hack Nation — Gemini Chat
+# EasyBuy — Super Smart Shopping Assistant
 
-Streaming chat app powered by Gemini. Python (FastAPI) backend + Next.js frontend.
+EasyBuy is an agentic shopping assistant for end-to-end ecommerce. Simply describe what you need — EasyBuy gathers your intent through natural conversation powered by Google Gemini, searches real products across retailers via SerpAPI, ranks them with transparent scores, and assembles a one-click checkout. After purchase, a personalized PDF invoice is delivered straight to your email inbox via Resend.
+
+Built for the 4th Hack-Nation Global AI Hackathon (Feb 2026), VC Track — Agentic Commerce challenge.
+
+## System Architecture
+
+```
++----------------------------------------------------------------+
+|                      BROWSER  (:3000)                          |
+|  Next.js 15 / React 19 / Tailwind CSS v4                      |
+|                                                                |
+|  [Chat]  -->  [Breakdown]  -->  [Search]  -->  [Cart]  -->  [Checkout]
+|  Step 1       Step 2           Step 3        Step 4       Step 5
++-------------------------------+--------------------------------+
+                                |
+                           REST / JSON
+                                |
++-------------------------------v--------------------------------+
+|                    FASTAPI BACKEND  (:8000)                    |
+|                                                                |
+|  /api/intent-chat   Conversational intent gathering            |
+|  /api/breakdown     Intent --> articles[] + constraints{}      |
+|  /api/search        Per-article product discovery + ranking    |
+|  /api/cart          Multi-retailer cart assembly               |
+|  /api/checkout      Simulated per-retailer fan-out             |
+|  /api/invoice/email PDF invoice generation + email delivery    |
++--------+-----------------------+-------------------+-----------+
+         |                       |                   |
+   +-----v---------+     +------v--------+    +-----v--------+
+   | Google Gemini  |     |   SerpAPI     |    |   Resend     |
+   | 3 Pro Preview  |     |   Google      |    |   Email API  |
+   |                |     |   Shopping    |    +--------------+
+   +-----+--+------+     +------+--------+
+         |  |                    |
+   Intent   Article        Real product
+   chat     breakdown      listings
+```
 
 ## Quick start
 
@@ -47,14 +83,6 @@ make prod
 ```
 
 `make up` defaults to dev mode. Set `SERPAPI_MODE=prod` to switch.
-
-## Architecture
-
-See [docs/architecture.md](docs/architecture.md).
-
-```
-Browser (:3000) → POST /api/chat → FastAPI (:8000) → Gemini API → SSE stream back
-```
 
 ## Docs
 
