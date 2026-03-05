@@ -17,7 +17,7 @@ https://github.com/YadavAkash96/easybuy-agent/assets/demo.mp4
 
 ## How It Works
 
-![EasyBuy System Architecture](docs/architecture.svg)
+![EasyBuy System Architecture](docs/easybuy-architecture.svg)
 
 ---
 
