@@ -10,8 +10,8 @@ No search bars. No tab switching. No manual filtering.
 
 ## Demo
 
-<!-- Replace with your video link after uploading -->
-https://github.com/YadavAkash96/easybuy-agent/assets/demo.mp4
+[![Watch the Demo](https://img.youtube.com/vi/RwBON9lWYF0/0.jpg)](https://youtu.be/RwBON9lWYF0)
+
 
 ---
 
