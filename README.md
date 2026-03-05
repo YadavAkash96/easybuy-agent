@@ -87,10 +87,10 @@ make prod   # live SerpAPI calls
 
 ---
 
-## About
+## Credits
 
 Built by Akash Yadav and Leo Maglanoc during the 4th Hack-Nation Global AI Hackathon, February 2026, VC Track, Agentic Commerce challenge.
 
-Backend pipeline, agent orchestration, product ranking, budget allocation, and invoice generation by Akash Yadav. Frontend and integration by Leo Maglanoc.
+Backend pipeline, agent orchestration, product ranking, budget allocation, and invoice generation by **Akash Yadav**. Frontend and integration by **Leo Maglanoc**.
 
 yadavakash1996@outlook.com
