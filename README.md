@@ -93,4 +93,4 @@ Built by Akash Yadav and Leo Maglanoc during the 4th Hack-Nation Global AI Hacka
 
 Backend pipeline, agent orchestration, product ranking, budget allocation, and invoice generation by Akash Yadav. Frontend and integration by Leo Maglanoc.
 
-akash.yadav@fau.de
+yadavakash1996@outlook.com
